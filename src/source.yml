@@ -1,0 +1,8 @@
+name: Fast Tagger
+description: "Fast tagging without searching for tags"
+version: 0.0.1
+ui:
+  javascript:
+    - FastTagger.js
+  css:
+    - FastTagger.css
