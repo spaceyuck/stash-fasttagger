@@ -1,21 +1,43 @@
 import FastTaggerContent from "@components/FastTaggerContent";
+//import { Placement } from "react-bootstrap/esm/Overlay";
 
 const PluginApi = window.PluginApi;
 const { React, GQL } = PluginApi;
 const { Button } = PluginApi.libraries.Bootstrap;
 const { FormattedMessage } = PluginApi.libraries.Intl;
 
-interface FastTaggerTagSelectAddonProps {}
+interface IFilterValueProps<T> {
+  values?: T[];
+  onSelect?: (item: T[]) => void;
+}
+
+interface IFilterProps {
+  noSelectionString?: string;
+  className?: string;
+  active?: boolean;
+  isMulti?: boolean;
+  isClearable?: boolean;
+  isDisabled?: boolean;
+  creatable?: boolean;
+  menuPortalTarget?: HTMLElement | null;
+}
+
+type TagSelectProps = IFilterProps &
+  IFilterValueProps<Tag> & {
+    hoverPlacement?: /*Placement*/any;
+    hoverPlacementLabel?: /*Placement*/any;
+    excludeIds?: string[];
+  };
 
 interface FastTaggerTagSelectAddonState {
   isOpen: boolean;
 }
 
 class FastTaggerTagSelectAddon extends React.Component<
-  FastTaggerTagSelectAddonProps,
+  TagSelectProps,
   FastTaggerTagSelectAddonState
 > {
-  constructor(props: FastTaggerTagSelectAddonState) {
+  constructor(props: TagSelectProps) {
     super(props);
     this.state = {
       isOpen: false,
@@ -30,6 +52,10 @@ class FastTaggerTagSelectAddon extends React.Component<
 
   render() {
     //if (loading) return <LoadingIndicator />;
+
+    if (!this.props.isMulti || this.props.isClearable === false) {
+        return (<></>);
+    }
 
     return (
       <>
@@ -47,7 +73,7 @@ class FastTaggerTagSelectAddon extends React.Component<
             )}
           </Button>
         </div>
-        {this.state.isOpen && <FastTaggerContent />}
+        {this.state.isOpen && <FastTaggerContent values={this.props.values} excludeIds={this.props.excludeIds} onSelect={this.props.onSelect} />}
       </>
     );
   }

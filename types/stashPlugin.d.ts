@@ -5,6 +5,8 @@ import type {
   IconDefinition,
   SizeProp,
 } from "@fortawesome/fontawesome-svg-core";
+import { Placement } from "react-bootstrap/esm/Overlay";
+
 declare global {
   interface Window {
     PluginApi: IPluginApi;
@@ -80,17 +82,24 @@ interface IPluginApi {
     ReactRouterDOM: typeof ReactRouterDOM;
     Bootstrap: {
       Button: React.FC<any>;
+      Modal: React.FC<any> & {
+        Body: React.FC<any>;
+        Dialog: React.FC<any>;
+        Footer: React.FC<any>;
+        Header: React.FC<any>;
+        Title: React.FC<any>;
+      };
       Nav: React.FC<any> & {
         Link: React.FC<any>;
         Item: React.FC<any>;
       };
+      Spinner: React.FC<any>;
       Tab: React.FC<any> & {
         Pane: React.FC<any>;
-      }
+      };
     };
     Apollo: {};
-    FontAwesomeRegular: {
-    };
+    FontAwesomeRegular: {};
     FontAwesomeSolid: {
       faBox: IconDefinition;
       faEye: IconDefinition;
@@ -100,10 +109,10 @@ interface IPluginApi {
       faTansgenderAlt: IconDefinition;
       faVenus: IconDefinition;
     };
-    FontAwesomeBrands: {
-    };
+    FontAwesomeBrands: {};
     Intl: {
       FormattedMessage: React.FC<any>;
+      useIntl: Function;
     };
     Mousetrap: {};
     MousetrapPause: {};
@@ -111,7 +120,7 @@ interface IPluginApi {
   };
   /**
    * This namespace contains all of the components that may need to be loaded using the loadComponents method. Components are added to this namespace as needed. Please make a development request if a required component is not in this namespace.
-   * 
+   *
    * This component also includes coarse-grained entries for every lazily loaded import in the stock UI. If a component is not available in components when the page loads, it can be loaded using the coarse-grained entry. For example, PerformerCard can be loaded using loadableComponents.Performers.
    */
   loadableComponents: any;
@@ -124,7 +133,7 @@ interface IPluginApi {
     StashService: any;
     /**
      * Due to code splitting, some components may not be loaded and available when a plugin page is rendered. loadComponents loads all of the components that a plugin page may require.
-     * 
+     *
      * In general, PluginApi.hooks.useLoadComponents hook should be used instead.
      * @param components The list of components to load. These values should come from the PluginApi.loadableComponents namespace.
      * @returns Returns a Promise<void> that resolves when all of the components have been loaded.
@@ -151,7 +160,7 @@ interface IPluginApi {
     before: (target: string, fn: Function) => void;
     instead: (target: string, fn: Function) => void;
     after: (target: string, fn: Function) => void;
-  },
+  };
   /**
    * This namespace contains methods used to register page routes and components.
    */
@@ -183,6 +192,7 @@ interface StashPluginComponents /* extends Record<string, React.FC<any>> */ {
     props: PropsPerformerDetailsPanelDetailGroup
   ) => React.JSX.Element;
   SceneCard: (props: ISceneCardProps) => React.JSX.Element;
+  ModalComponent: any;
 }
 
 interface PatchableComponents {
@@ -271,6 +281,31 @@ interface PropsPerformerDetailsPanelDetailGroup
   performer: Performer;
 }
 
+interface IFilterValueProps<T> {
+  values?: T[];
+  onSelect?: (item: T[]) => void;
+}
+
+interface IFilterProps {
+  noSelectionString?: string;
+  className?: string;
+  active?: boolean;
+  isMulti?: boolean;
+  isClearable?: boolean;
+  isDisabled?: boolean;
+  creatable?: boolean;
+  menuPortalTarget?: HTMLElement | null;
+}
+
+interface IFilterComponentProps<T> extends IFilterProps {
+  loadOptions: (inputValue: string) => Promise<Option<T>[]>;
+  onCreate?: (
+    name: string
+  ) => Promise<{ value: string; item: T; message: string }>;
+  getNamedObject?: (id: string, name: string) => T;
+  isValidNewOption?: (inputValue: string, options: T[]) => boolean;
+}
+
 interface IHoverPopover extends React.PropsWithChildren {
   enterDelay?: number;
   leaveDelay?: number;
@@ -327,3 +362,10 @@ interface ILoadingProps {
   small?: boolean;
   card?: boolean;
 }
+
+type TagSelectProps = IFilterProps &
+  IFilterValueProps<Tag> & {
+    hoverPlacement?: Placement;
+    hoverPlacementLabel?: Placement;
+    excludeIds?: string[];
+  };

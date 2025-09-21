@@ -10,7 +10,7 @@ PluginApi.patch.after(
     return (
       <>
         {result}
-        <FastTaggerTagSelectAddon />
+        <FastTaggerTagSelectAddon {...props} />
       </>
     );
   }
