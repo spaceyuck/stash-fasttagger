@@ -1,5 +1,4 @@
 import FastTaggerContent from "@components/FastTaggerContent";
-//import { Placement } from "react-bootstrap/esm/Overlay";
 
 const PluginApi = window.PluginApi;
 const { React, GQL } = PluginApi;

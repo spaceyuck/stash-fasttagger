@@ -1,7 +1,3 @@
-import { ModalProps, Sizes } from "react-bootstrap";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { Icon } from "./Icon";
-
 const PluginApi = window.PluginApi;
 const { React } = PluginApi;
 const { Button, Modal, Spinner } = PluginApi.libraries.Bootstrap;
@@ -18,7 +14,7 @@ interface IModal {
   show: boolean;
   onHide?: () => void;
   header?: JSX.Element | string;
-  icon?: IconDefinition;
+  icon?: string;
   cancel?: IButton;
   accept?: IButton;
   isRunning?: boolean;
@@ -55,7 +51,6 @@ export const ModalComponent: React.FC<IModal> = ({
     {...modalProps}
   >
     <Modal.Header>
-      {icon ? <Icon icon={icon} /> : ""}
       <span>{header ?? ""}</span>
     </Modal.Header>
     <Modal.Body>{children}</Modal.Body>
