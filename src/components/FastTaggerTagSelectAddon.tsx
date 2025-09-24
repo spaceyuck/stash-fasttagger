@@ -6,6 +6,7 @@ const { Button } = PluginApi.libraries.Bootstrap;
 const { FormattedMessage } = PluginApi.libraries.Intl;
 
 interface IFilterValueProps<T> {
+  ids?: string[];
   values?: T[];
   onSelect?: (item: T[]) => void;
 }
@@ -52,7 +53,7 @@ class FastTaggerTagSelectAddon extends React.Component<
   render() {
     //if (loading) return <LoadingIndicator />;
 
-    if (!this.props.isMulti || this.props.isClearable === false) {
+    if (!this.props.isMulti || this.props.isClearable === false || this.props.isDisabled === true || (this.props.ids && this.props.ids.length > 0)) {
         return (<></>);
     }
 

@@ -706,6 +706,7 @@ interface IPluginApi {
         Item: React.FC<any>;
       };
       Spinner: React.FC<any>;
+      Tabs: React.FC<any>;
       Tab: React.FC<any> & {
         Pane: React.FC<any>;
       };

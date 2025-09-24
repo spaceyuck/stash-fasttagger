@@ -74,6 +74,7 @@ class FastTaggerTagGroupForm extends React.Component<
                   </Button>
                 )}
               </ButtonGroup>
+              <span>{this.props.item.order}</span>
             </div>
             <div className="col-md-6 text-right">
               {this.props.onGroupRemove && (

@@ -5,7 +5,7 @@ import { FastTaggerGroup } from "../services/FastTaggerService";
 
 const PluginApi = window.PluginApi;
 const { React } = PluginApi;
-const { Button } = PluginApi.libraries.Bootstrap;
+const { Button, Tabs, Tab } = PluginApi.libraries.Bootstrap;
 const { LoadingIndicator } = PluginApi.components;
 
 interface FastTaggerSettingsDialogProps {
@@ -42,7 +42,14 @@ class FastTaggerSettingsDialog extends React.Component<
   };
 
   onAddClicked = () => {
-    FastTaggerService.addTagGroup({});
+    FastTaggerService.addTagGroup({
+      order: 99999,
+    });
+    this.loadTagGroups();
+  };
+
+  onClearClicked = () => {
+    FastTaggerService.clearConfig();
     this.loadTagGroups();
   };
 
@@ -79,23 +86,50 @@ class FastTaggerSettingsDialog extends React.Component<
         }}
         modalProps={{ size: "xl", dialogClassName: "scrape-dialog" }}
       >
-        {this.state.loading && <LoadingIndicator />}
-        {!this.state.loading &&
-          this.state.tagGroups?.map((tagGroup) => (
-            <FastTaggerTagGroupForm
-              item={tagGroup}
-              onGroupUp={() => this.onGroupUp(tagGroup)}
-              onGroupDown={() => this.onGroupDown(tagGroup)}
-              onGroupRemove={() => this.onGroupRemove(tagGroup)}
-            />
-          ))}
-        {!this.state.loading && (
-          <div>
-            <Button variant="primary" onClick={this.onAddClicked}>
-              Add
-            </Button>
-          </div>
-        )}
+        <Tabs defaultActiveKey="groups">
+          <Tab eventKey="tags" title="Tags">
+            {this.state.loading && <LoadingIndicator />}
+            <div className="row">
+              <div className="col-10"></div>
+              <div className="col-2">
+                {!this.state.loading &&
+                this.state.tagGroups?.map((tagGroup) => (
+                  <div>{tagGroup.name}</div>
+                ))}
+              </div>
+            </div>
+          </Tab>
+          <Tab eventKey="groups" title="Groups">
+            {this.state.loading && <LoadingIndicator />}
+            <div className="row">
+              {!this.state.loading &&
+                this.state.tagGroups?.map((tagGroup) => (
+                  <div className="col-sm-12 col-md-6 col-lg-4">
+                    <FastTaggerTagGroupForm
+                      item={tagGroup}
+                      onGroupUp={() => this.onGroupUp(tagGroup)}
+                      onGroupDown={() => this.onGroupDown(tagGroup)}
+                      onGroupRemove={() => this.onGroupRemove(tagGroup)}
+                    />
+                  </div>
+                ))}
+            </div>
+            {!this.state.loading && (
+              <div>
+                <Button variant="primary" onClick={this.onAddClicked}>
+                  Add
+                </Button>
+              </div>
+            )}
+            {!this.state.loading && (
+              <div>
+                <Button variant="danger" onClick={this.onClearClicked}>
+                  Clear Config
+                </Button>
+              </div>
+            )}
+          </Tab>
+        </Tabs>
       </ModalComponent>
     );
   }
