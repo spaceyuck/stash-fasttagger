@@ -4,8 +4,7 @@ const PluginApi = window.PluginApi;
 const { React } = window.PluginApi;
 const { Button, ButtonGroup, Card } = PluginApi.libraries.Bootstrap;
 const { FormattedMessage } = PluginApi.libraries.Intl;
-const { faArrowUp, faArrowDown, faTrash } =
-  PluginApi.libraries.FontAwesomeSolid;
+const { faArrowUp, faArrowDown, faTrash } = PluginApi.libraries.FontAwesomeSolid;
 const { Icon } = PluginApi.components;
 
 interface FastTaggerTagGroupFormProps {
@@ -17,10 +16,7 @@ interface FastTaggerTagGroupFormProps {
 
 interface FastTaggerTagGroupFormState {}
 
-class FastTaggerTagGroupForm extends React.Component<
-  FastTaggerTagGroupFormProps,
-  FastTaggerTagGroupFormState
-> {
+class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps, FastTaggerTagGroupFormState> {
   constructor(props: FastTaggerTagGroupFormProps) {
     super(props);
     this.state = {};
@@ -78,11 +74,7 @@ class FastTaggerTagGroupForm extends React.Component<
             </div>
             <div className="col-md-6 text-right">
               {this.props.onGroupRemove && (
-                <Button
-                  size="xs"
-                  variant="danger"
-                  onClick={this.onRemoveClicked}
-                >
+                <Button size="xs" variant="danger" onClick={this.onRemoveClicked}>
                   <Icon icon={faTrash} />
                 </Button>
               )}

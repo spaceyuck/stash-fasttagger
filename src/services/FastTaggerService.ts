@@ -2,52 +2,59 @@ const { GQL } = window.PluginApi;
 const { StashService } = window.PluginApi.utils;
 
 let groups: FastTaggerGroup[] = [];
-let groupsById: { [key: string]: FastTaggerGroup } = {};
+let groupsById: Map<string, FastTaggerGroup> = new Map();
 let tagToGroups: FastTaggerTag[] = [];
-let tagToGroupsByTagId: { [key: string]: FastTaggerTag } = {};
+let tagToGroupsByTagId: Map<string, FastTaggerTag> = new Map();
 let tags: Tag[] = [];
-let tagsById: { [key: string]: Tag } = {};
+let tagsById: Map<string, Tag> = new Map();
 
 let initialized = false;
+let initializePromise: Promise<void> | undefined = undefined;
 
 export async function init() {
   if (initialized) {
     return;
+  } else if (initializePromise) {
+    return initializePromise;
   }
 
-  console.debug("initializing fast tagger data");
-  await loadConfig();
-  await loadTags();
-
-  if (groups.length == 0) {
-    await migrateEasyTagConfig();
-  }
-
-  initialized = true;
+  initializePromise = new Promise((resolve, reject) => {
+    console.debug("initializing fast tagger data");
+    loadConfig().then(() => {
+      loadTags().then(() => {
+        if (groups.length == 0) {
+          migrateEasyTagConfig().then(() => {
+            initialized = true;
+            initializePromise = undefined;
+            resolve();
+          });
+        }
+      });
+    });
+  });
+  return initializePromise;
 }
 
 async function loadConfig() {
   groups = [];
-  groupsById = {};
+  groupsById.clear();
   tagToGroups = [];
-  tagToGroupsByTagId = {};
-  return window.csLib
-    .getConfiguration("fastTagger", { groups: "[]", tagToGroups: "[]" })
-    .then((storedConfig) => {
-      if (storedConfig) {
-        groups = JSON.parse(storedConfig["groups"]);
-        for (var group of groups) {
-          if (!group.id) {
-            continue;
-          }
-          groupsById[group.id] = group;
+  tagToGroupsByTagId.clear();
+  return window.csLib.getConfiguration("fastTagger", { groups: "[]", tagToGroups: "[]" }).then((storedConfig) => {
+    if (storedConfig) {
+      groups = JSON.parse(storedConfig["groups"]);
+      for (var group of groups) {
+        if (!group.id) {
+          continue;
         }
-        tagToGroups = JSON.parse(storedConfig["tagToGroups"]);
-        for (var tag of tagToGroups) {
-          tagToGroupsByTagId[tag.tagId] = tag;
-        }
+        groupsById.set(group.id, group);
       }
-    });
+      tagToGroups = JSON.parse(storedConfig["tagToGroups"]);
+      for (var tag of tagToGroups) {
+        tagToGroupsByTagId.set("" + tag.tagId, tag);
+      }
+    }
+  });
 }
 
 async function saveConfig() {
@@ -62,12 +69,16 @@ export async function clearConfig() {
     groups: "[]",
     tagToGroups: "[]",
   });
-  await init();
+  groups = [];
+  groupsById.clear();
+  tagToGroups = [];
+  tagToGroupsByTagId.clear();
+  initialized = false;
 }
 
 async function loadTags() {
   tags = [];
-  tagsById = {};
+  tagsById.clear();
   return StashService.queryFindTags({
     makeFindFilter(): FindFilterType {
       return {
@@ -81,9 +92,7 @@ async function loadTags() {
     },
   }).then((result: any) => {
     const tagList: Tag[] = result.data.findTags.tags;
-    const unseenTags = new Map(
-      Object.keys(tagToGroupsByTagId).map((tagId) => [tagId, false])
-    );
+    const unseenTags = new Map(Object.keys(tagToGroupsByTagId).map((tagId) => [tagId, false]));
     for (const tag of tagList) {
       addTag(tag);
 
@@ -105,23 +114,26 @@ async function loadTags() {
 
 function addTag(tag: Tag) {
   tags.push(tag);
-  tagsById[tag.id] = tag;
+  tagsById.set(tag.id, tag);
 
-  if (!tagToGroupsByTagId[tag.id]) {
+  if (!tagToGroupsByTagId.get("" + tag.id)) {
     const tagToGroup: FastTaggerTag = {
       tagId: tag.id,
     };
     tagToGroups.push(tagToGroup);
-    tagToGroupsByTagId[tag.id] = tagToGroup;
+    tagToGroupsByTagId.set("" + tag.id, tagToGroup);
   }
 }
 
 function removeTag(tagId: string) {
-  const tagToGroup = tagToGroupsByTagId[tagId];
+  const tagToGroup = tagToGroupsByTagId.get(tagId);
+  if (!tagToGroup) {
+    return;
+  }
   const idx = tagToGroups.indexOf(tagToGroup);
 
   tagToGroups.splice(idx, 1);
-  delete tagToGroupsByTagId[tagId];
+  tagToGroupsByTagId.delete("" + tagId);
 }
 
 function _addTagGroup(group: FastTaggerGroup) {
@@ -130,12 +142,12 @@ function _addTagGroup(group: FastTaggerGroup) {
   }
 
   groups.push(group);
-  groupsById[group.id];
+  groupsById.set(group.id, group);
 }
 
 function _finalzeTagGroups() {
-  groups.sort((a:FastTaggerGroup, b:FastTaggerGroup) => a.order - b.order)
-  
+  groups.sort((a: FastTaggerGroup, b: FastTaggerGroup) => a.order - b.order);
+
   // make order continguous again
   let orderValue = 0;
   for (const group of groups) {
@@ -148,40 +160,51 @@ const uuid41 = () => {
   let d = "";
   while (d.length < 32) d += Math.random().toString(16).substr(2);
   const vr = ((parseInt(d.substr(16, 1), 16) & 0x3) | 0x8).toString(16);
-  return `${d.substr(0, 8)}-${d.substr(8, 4)}-4${d.substr(
-    13,
-    3
-  )}-${vr}${d.substr(17, 3)}-${d.substr(20, 12)}`;
+  return `${d.substr(0, 8)}-${d.substr(8, 4)}-4${d.substr(13, 3)}-${vr}${d.substr(17, 3)}-${d.substr(20, 12)}`;
 };
 
 async function migrateEasyTagConfig() {
   if (groups.length > 0) {
     return;
   }
-  return window.csLib
-    .getConfiguration("easytag", { Groups: "{}", Tags: "[]" })
-    .then((storedConfig) => {
-      if (storedConfig) {
-        const easyTagsGroups: EasyTagGroups = JSON.parse(
-          storedConfig["Groups"]
-        );
-        const easyTagsTags: EasyTagTag[] = JSON.parse(storedConfig["Tags"]);
+  return window.csLib.getConfiguration("easytag", { Groups: "{}", Tags: "[]" }).then((storedConfig) => {
+    if (storedConfig) {
+      const easyTagsGroups: EasyTagGroups = JSON.parse(storedConfig["Groups"]);
+      const easyTagsTags: EasyTagTag[] = JSON.parse(storedConfig["Tags"]);
 
-        for (const key in easyTagsGroups) {
-          const easyTagsGroup = easyTagsGroups[key];
-          
-          const group:FastTaggerGroup = {
-            id: uuid41(),
-            name: easyTagsGroup.title,
-            order: easyTagsGroup.order
-          };
+      const easyTagsGroupNameToGroup: Map<string, string> = new Map();
+      for (const key in easyTagsGroups) {
+        const easyTagsGroup = easyTagsGroups[key];
 
-          _addTagGroup(group);
+        const group: FastTaggerGroup = {
+          id: uuid41(),
+          name: easyTagsGroup.title,
+          order: easyTagsGroup.order,
+        };
+
+        _addTagGroup(group);
+
+        if (group.id) {
+          easyTagsGroupNameToGroup.set(key, group.id);
         }
-
-        _finalzeTagGroups();
       }
-    });
+
+      _finalzeTagGroups();
+
+      for (const easyTagsTag of easyTagsTags) {
+        const tagToGroup = tagToGroupsByTagId.get("" + easyTagsTag.stashId);
+        if (tagToGroup && easyTagsTag.group) {
+          const tagGroupId = easyTagsGroupNameToGroup.get(easyTagsTag.group);
+          if (tagGroupId) {
+            const tagGroup = groupsById.get(tagGroupId);
+            if (tagGroup) {
+              tagToGroup.groupId = tagGroup.id;
+            }
+          }
+        }
+      }
+    }
+  });
 }
 
 interface EasyTagGroups {
@@ -207,17 +230,22 @@ export async function getTagGroups(): Promise<FastTaggerGroup[]> {
   return groups;
 }
 
-export function addTagGroup(group: FastTaggerGroup): void {
+export async function addTagGroup(group: FastTaggerGroup) {
+  await init();
+
   group.id = uuid41();
   if (groups.length > 0) {
     group.order = groups[groups.length - 1].order + 1;
   } else {
     group.order = 1;
   }
+
   _addTagGroup(group);
 }
 
-export function removeTagGroup(group: FastTaggerGroup): void {
+export async function removeTagGroup(group: FastTaggerGroup) {
+  await init();
+
   if (!group.id) {
     return;
   }
@@ -228,12 +256,14 @@ export function removeTagGroup(group: FastTaggerGroup): void {
   }
 
   groups.splice(idx, 1);
-  delete groupsById[group.id];
+  groupsById.delete(group.id);
 
   _finalzeTagGroups();
 }
 
-export function moveTagGroupUp(group: FastTaggerGroup): void {
+export async function moveTagGroupUp(group: FastTaggerGroup) {
+  await init();
+
   const idx = groups.findIndex((e) => e.id == group.id);
   if (idx < 0) {
     return;
@@ -244,14 +274,16 @@ export function moveTagGroupUp(group: FastTaggerGroup): void {
     return;
   }
 
-  const orderAbove = groups[idx-1].order;
-  groups[idx-1].order = groups[idx].order;
+  const orderAbove = groups[idx - 1].order;
+  groups[idx - 1].order = groups[idx].order;
   groups[idx].order = orderAbove;
 
   _finalzeTagGroups();
 }
 
-export function moveTagGroupDown(group: FastTaggerGroup): void {
+export async function moveTagGroupDown(group: FastTaggerGroup) {
+  await init();
+
   const idx = groups.findIndex((e) => e.id == group.id);
   if (idx < 0) {
     return;
@@ -269,15 +301,24 @@ export function moveTagGroupDown(group: FastTaggerGroup): void {
   _finalzeTagGroups();
 }
 
-export async function getTagGroupToTags(): Promise<
-  Map<FastTaggerGroup, Tag[]>
-> {
+export async function getTagGroupToTags(): Promise<FastTaggerGroupTags[]> {
   await init();
 
-  const ret: Map<FastTaggerGroup, Tag[]> = new Map();
+  const resultEntriesByGroupId: Map<string, FastTaggerGroupTags> = new Map();
+  const ret: FastTaggerGroupTags[] = [];
 
   for (const group of groups) {
-    ret.set(group, []);
+    if (!group.id) {
+      continue;
+    }
+
+    const entry: FastTaggerGroupTags = {
+      group: group,
+      tags: [],
+    };
+
+    resultEntriesByGroupId.set(group.id, entry);
+    ret.push(entry);
   }
 
   for (const tagToGroup of tagToGroups) {
@@ -285,12 +326,23 @@ export async function getTagGroupToTags(): Promise<
       continue;
     }
 
-    const group = groupsById[tagToGroup.groupId];
-    const tag = tagsById[tagToGroup.tagId];
-    ret.get(group)?.push(tag);
+    const group = groupsById.get(tagToGroup.groupId);
+    const tag = tagsById.get(tagToGroup.tagId);
+    if (group && tag) {
+      resultEntriesByGroupId.get(tagToGroup.groupId)?.tags.push(tag);
+    }
   }
 
   return ret;
+}
+
+export async function moveTagToGroup(tag: Tag, group?: FastTaggerGroup) {
+  const tagToGroups = tagToGroupsByTagId.get(tag.id);
+  if (!tagToGroups) {
+    return;
+  }
+
+  tagToGroups.groupId = group?.id;
 }
 
 export interface FastTaggerGroup {
@@ -302,4 +354,9 @@ export interface FastTaggerGroup {
 export interface FastTaggerTag {
   tagId: string;
   groupId?: string;
+}
+
+export interface FastTaggerGroupTags {
+  group: FastTaggerGroup;
+  tags: Tag[];
 }

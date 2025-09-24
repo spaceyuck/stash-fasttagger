@@ -1,11 +1,11 @@
 import { ModalComponent } from "./Modal";
 import FastTaggerTagGroupForm from "./FastTaggerTagGroupForn";
 import * as FastTaggerService from "../services/FastTaggerService";
-import { FastTaggerGroup } from "../services/FastTaggerService";
+import { FastTaggerGroup, FastTaggerGroupTags } from "../services/FastTaggerService";
 
 const PluginApi = window.PluginApi;
 const { React } = PluginApi;
-const { Button, Tabs, Tab } = PluginApi.libraries.Bootstrap;
+const { Button, Card, Dropdown, DropdownButton, Tabs, Tab } = PluginApi.libraries.Bootstrap;
 const { LoadingIndicator } = PluginApi.components;
 
 interface FastTaggerSettingsDialogProps {
@@ -15,12 +15,10 @@ interface FastTaggerSettingsDialogProps {
 interface FastTaggerSettingsDialogState {
   loading?: boolean;
   tagGroups?: FastTaggerGroup[];
+  tagGroupsToTags?: FastTaggerGroupTags[];
 }
 
-class FastTaggerSettingsDialog extends React.Component<
-  FastTaggerSettingsDialogProps,
-  FastTaggerSettingsDialogState
-> {
+class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogProps, FastTaggerSettingsDialogState> {
   constructor(props: FastTaggerSettingsDialogProps) {
     super(props);
     this.state = {
@@ -33,39 +31,57 @@ class FastTaggerSettingsDialog extends React.Component<
   }
 
   loadTagGroups = () => {
-    console.debug("loading tag groups...");
+    console.debug("loading tag groups and tag groups to tags...");
     this.setState({ loading: true });
-    FastTaggerService.getTagGroups().then((tagGroups) => {
+    const tagGroupsPromise = FastTaggerService.getTagGroups().then((tagGroups) => {
       console.debug("done loading tag groups", tagGroups);
-      this.setState({ tagGroups: tagGroups, loading: false });
+      this.setState({ tagGroups: tagGroups });
+    });
+    const tagGroupsToTagsPromise = FastTaggerService.getTagGroupToTags().then((tagGroupsToTags) => {
+      console.debug("done loading tag groups to tags", tagGroupsToTags);
+      this.setState({ tagGroupsToTags: tagGroupsToTags });
+    });
+    return Promise.all([tagGroupsPromise, tagGroupsToTagsPromise]).then(() => {
+      this.setState({ loading: false });
+    });
+  };
+
+  onTagMove = (tag: Tag, group?: FastTaggerGroup) => {
+    FastTaggerService.moveTagToGroup(tag, group).then(() => {
+      this.loadTagGroups();
     });
   };
 
   onAddClicked = () => {
     FastTaggerService.addTagGroup({
       order: 99999,
+    }).then(() => {
+      this.loadTagGroups();
     });
-    this.loadTagGroups();
   };
 
   onClearClicked = () => {
-    FastTaggerService.clearConfig();
-    this.loadTagGroups();
+    FastTaggerService.clearConfig().then(() => {
+      this.loadTagGroups();
+    });
   };
 
   onGroupUp = (tagGroup: FastTaggerGroup) => {
-    FastTaggerService.moveTagGroupUp(tagGroup);
-    this.loadTagGroups();
+    FastTaggerService.moveTagGroupUp(tagGroup).then(() => {
+      this.loadTagGroups();
+    });
   };
 
   onGroupDown = (tagGroup: FastTaggerGroup) => {
-    FastTaggerService.moveTagGroupDown(tagGroup);
-    this.loadTagGroups();
+    FastTaggerService.moveTagGroupDown(tagGroup).then(() => {
+      this.loadTagGroups();
+    });
   };
 
   onGroupRemove = (tagGroup: FastTaggerGroup) => {
-    FastTaggerService.removeTagGroup(tagGroup);
-    this.loadTagGroups();
+    FastTaggerService.removeTagGroup(tagGroup).then(() => {
+      this.loadTagGroups();
+    });
   };
 
   render() {
@@ -86,18 +102,38 @@ class FastTaggerSettingsDialog extends React.Component<
         }}
         modalProps={{ size: "xl", dialogClassName: "scrape-dialog" }}
       >
-        <Tabs defaultActiveKey="groups">
+        <Tabs defaultActiveKey="groups" justify>
           <Tab eventKey="tags" title="Tags">
             {this.state.loading && <LoadingIndicator />}
-            <div className="row">
-              <div className="col-10"></div>
-              <div className="col-2">
-                {!this.state.loading &&
-                this.state.tagGroups?.map((tagGroup) => (
-                  <div>{tagGroup.name}</div>
-                ))}
-              </div>
-            </div>
+            {!this.state.loading &&
+              this.state.tagGroupsToTags?.map((groupEntry) => (
+                <Card className="card-sm">
+                  <Card.Header>{groupEntry.group.name}</Card.Header>
+                  <Card.Body>
+                    <div className="row">
+                      {groupEntry.tags.map((tag) => (
+                        <div className="col-12 col-md-6 col-lg-4">
+                          <Card className="card-sm">
+                            <Card.Body>
+                              <div>{tag.name}</div>
+                              <div>
+                                <DropdownButton variant="primary" title="Move to" drop="end" className="btn-sm">
+                                  {this.state.tagGroupsToTags?.map((targetGroupEntry) => {
+                                    <Dropdown.Item onClick={() => this.onTagMove(tag, targetGroupEntry.group)}>
+                                      {targetGroupEntry.group.name}
+                                    </Dropdown.Item>
+                                  })}
+                                  <Dropdown.Item onClick={() => this.onTagMove(tag, undefined)}>No group</Dropdown.Item>
+                                </DropdownButton>
+                              </div>
+                            </Card.Body>
+                          </Card>
+                        </div>
+                      ))}
+                    </div>
+                  </Card.Body>
+                </Card>
+              ))}
           </Tab>
           <Tab eventKey="groups" title="Groups">
             {this.state.loading && <LoadingIndicator />}

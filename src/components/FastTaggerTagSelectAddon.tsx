@@ -24,8 +24,8 @@ interface IFilterProps {
 
 type TagSelectProps = IFilterProps &
   IFilterValueProps<Tag> & {
-    hoverPlacement?: /*Placement*/any;
-    hoverPlacementLabel?: /*Placement*/any;
+    hoverPlacement?: /*Placement*/ any;
+    hoverPlacementLabel?: /*Placement*/ any;
     excludeIds?: string[];
   };
 
@@ -33,10 +33,7 @@ interface FastTaggerTagSelectAddonState {
   isOpen: boolean;
 }
 
-class FastTaggerTagSelectAddon extends React.Component<
-  TagSelectProps,
-  FastTaggerTagSelectAddonState
-> {
+class FastTaggerTagSelectAddon extends React.Component<TagSelectProps, FastTaggerTagSelectAddonState> {
   constructor(props: TagSelectProps) {
     super(props);
     this.state = {
@@ -53,27 +50,30 @@ class FastTaggerTagSelectAddon extends React.Component<
   render() {
     //if (loading) return <LoadingIndicator />;
 
-    if (!this.props.isMulti || this.props.isClearable === false || this.props.isDisabled === true || (this.props.ids && this.props.ids.length > 0)) {
-        return (<></>);
+    if (
+      !this.props.isMulti ||
+      this.props.isClearable === false ||
+      this.props.isDisabled === true ||
+      (this.props.ids && this.props.ids.length > 0)
+    ) {
+      return <></>;
     }
 
     return (
       <>
         <div>
-          <Button
-            className="plugin-fast-tagger-open-button"
-            variant="primary"
-            onClick={this.onToggleClick}
-          >
-            {!this.state.isOpen && (
-              <FormattedMessage id="plugin.fast-tagger.open" />
-            )}
-            {this.state.isOpen && (
-              <FormattedMessage id="plugin.fast-tagger.close" />
-            )}
+          <Button className="plugin-fast-tagger-open-button" variant="primary" onClick={this.onToggleClick}>
+            {!this.state.isOpen && <FormattedMessage id="plugin.fast-tagger.open" />}
+            {this.state.isOpen && <FormattedMessage id="plugin.fast-tagger.close" />}
           </Button>
         </div>
-        {this.state.isOpen && <FastTaggerContent values={this.props.values} excludeIds={this.props.excludeIds} onSelect={this.props.onSelect} />}
+        {this.state.isOpen && (
+          <FastTaggerContent
+            values={this.props.values}
+            excludeIds={this.props.excludeIds}
+            onSelect={this.props.onSelect}
+          />
+        )}
       </>
     );
   }

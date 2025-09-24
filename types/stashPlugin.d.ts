@@ -1,10 +1,7 @@
 import type React from "@types/react";
 import type ReactRouterDOM from "@types/react-router-dom";
 import type { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type {
-  IconDefinition,
-  SizeProp,
-} from "@fortawesome/fontawesome-svg-core";
+import type { IconDefinition, SizeProp } from "@fortawesome/fontawesome-svg-core";
 import { Placement } from "react-bootstrap/esm/Overlay";
 
 declare global {
@@ -498,9 +495,7 @@ interface IPluginApi {
     useInstalledScraperPackagesQuery(...args: any[]): any;
     useInstalledScraperPackagesStatusLazyQuery(...args: any[]): any;
     useInstalledScraperPackagesStatusQuery(...args: any[]): any;
-    useInstalledScraperPackagesStatusSuspenseQuery(
-      ...args: any[]
-    ): any;
+    useInstalledScraperPackagesStatusSuspenseQuery(...args: any[]): any;
     useInstalledScraperPackagesSuspenseQuery(...args: any[]): any;
     useJobQueueLazyQuery(...args: any[]): any;
     useJobQueueQuery(...args: any[]): any;
@@ -676,10 +671,7 @@ interface IPluginApi {
    * Allows plugins to listen for Stash's events.
    */
   Event: {
-    addEventListener: (
-      event: string,
-      callback: (e: CustomEvent) => void
-    ) => void;
+    addEventListener: (event: string, callback: (e: CustomEvent) => void) => void;
   };
   /**
    * provides access to UI libraries
@@ -693,7 +685,13 @@ interface IPluginApi {
         Body: React.FC<any>;
         Footer: React.FC<any>;
         Header: React.FC<any>;
-      }
+      };
+      DropdownButton: React.FC<any>;
+      Dropdown: React.FC<any> & {
+        Item: React.FC<any>;
+        Menu: React.FC<any>;
+        Toggle: React.FC<any>;
+      };
       Modal: React.FC<any> & {
         Body: React.FC<any>;
         Dialog: React.FC<any>;
@@ -1037,7 +1035,7 @@ interface IPluginApi {
 }
 
 interface CsLibStoredConfig {
-  [key: string]: string
+  [key: string]: string;
 }
 
 interface ICsLib {
@@ -1050,90 +1048,90 @@ interface ICsLib {
 /* -------------------------------------------------------------------------- */
 
 interface StashPluginComponents extends Record<string, React.FC<any>> {
-    AlertModal: React.FC<any>;
-    BackgroundImage: React.FC<any>;
-    BooleanSetting: React.FC<any>;
-    ChangeButtonSetting: React.FC<any>;
-    ConstantSetting: React.FC<any>;
-    CountrySelect: React.FC<any>;
-    CustomFieldInput: React.FC<any>;
-    CustomFields: React.FC<any>;
-    DateInput: React.FC<any>;
-    DetailImage: React.FC<any>;
-    ExternalLinkButtons: React.FC<any>;
-    ExternalLinksButton: React.FC<any>;
-    FolderSelect: React.FC<any>;
-    FrontPage: React.FC<any>;
-    GalleryCard: React.FC<any>;
-    "GalleryCard.Details": React.FC<any>;
-    "GalleryCard.Image": React.FC<any>;
-    "GalleryCard.Overlays": React.FC<any>;
-    "GalleryCard.Popovers": React.FC<any>;
-    GalleryIDSelect: React.FC<any>;
-    GallerySelect: React.FC<any>;
-    GroupIDSelect: React.FC<any>;
-    GroupSelect: React.FC<any>;
-    HeaderImage: React.FC<any>;
-    HoverPopover: React.FC<any>;
-    Icon: React.FC<any>;
-    ImageInput: React.FC<any>;
-    LightboxLink: React.FC<any>;
-    LoadingIndicator: React.FC<any>;
-    "MainNavBar.MenuItems": React.FC<any>;
-    "MainNavBar.UtilityItems": React.FC<any>;
-    ModalSetting: React.FC<any>;
-    NumberSetting: React.FC<any>;
-    PerformerAppearsWithPanel: React.FC<any>;
-    PerformerCard: React.FC<any>;
-    "PerformerCard.Details": React.FC<any>;
-    "PerformerCard.Image": React.FC<any>;
-    "PerformerCard.Overlays": React.FC<any>;
-    "PerformerCard.Popovers": React.FC<any>;
-    "PerformerCard.Title": React.FC<any>;
-    PerformerDetailsPanel: React.FC<any>;
-    "PerformerDetailsPanel.DetailGroup": React.FC<any>;
-    PerformerGalleriesPanel: React.FC<any>;
-    PerformerGroupsPanel: React.FC<any>;
-    PerformerHeaderImage: React.FC<any>;
-    PerformerIDSelect: React.FC<any>;
-    PerformerImagesPanel: React.FC<any>;
-    PerformerPage: React.FC<any>;
-    PerformerScenesPanel: React.FC<any>;
-    PerformerSelect: React.FC<any>;
-    PluginSettings: React.FC<any>;
-    RatingNumber: React.FC<any>;
-    RatingStars: React.FC<any>;
-    RatingSystem: React.FC<any>;
-    SceneFileInfoPanel: React.FC<any>;
-    SceneIDSelect: React.FC<any>;
-    ScenePage: React.FC<any>;
-    "ScenePage.TabContent": React.FC<any>;
-    "ScenePage.Tabs": React.FC<any>;
-    ScenePlayer: React.FC<any>;
-    SceneSelect: React.FC<any>;
-    "SceneCard.Details": React.FC<any>;
-    "SceneCard.Image": React.FC<any>;
-    "SceneCard.Overlays": React.FC<any>;
-    "SceneCard.Popovers": React.FC<any>;
-    SelectSetting: React.FC<any>;
-    Setting: React.FC<any>;
-    SettingGroup: React.FC<any>;
-    SettingModal: React.FC<any>;
-    StringListSetting: React.FC<any>;
-    StringSetting: React.FC<any>;
-    StudioIDSelect: React.FC<any>;
-    StudioSelect: React.FC<any>;
-    SweatDrops: React.FC<any>;
-    TabTitleCounter: React.FC<any>;
-    TagIDSelect: React.FC<any>;
-    "TagCard.Details": React.FC<any>;
-    "TagCard.Image": React.FC<any>;
-    "TagCard.Overlays": React.FC<any>;
-    "TagCard.Popovers": React.FC<any>;
-    "TagCard.Title": React.FC<any>;
-    TagLink: React.FC<any>;
-    TagSelect: React.FC<any>;
-    TruncatedText: React.FC<any>;
+  AlertModal: React.FC<any>;
+  BackgroundImage: React.FC<any>;
+  BooleanSetting: React.FC<any>;
+  ChangeButtonSetting: React.FC<any>;
+  ConstantSetting: React.FC<any>;
+  CountrySelect: React.FC<any>;
+  CustomFieldInput: React.FC<any>;
+  CustomFields: React.FC<any>;
+  DateInput: React.FC<any>;
+  DetailImage: React.FC<any>;
+  ExternalLinkButtons: React.FC<any>;
+  ExternalLinksButton: React.FC<any>;
+  FolderSelect: React.FC<any>;
+  FrontPage: React.FC<any>;
+  GalleryCard: React.FC<any>;
+  "GalleryCard.Details": React.FC<any>;
+  "GalleryCard.Image": React.FC<any>;
+  "GalleryCard.Overlays": React.FC<any>;
+  "GalleryCard.Popovers": React.FC<any>;
+  GalleryIDSelect: React.FC<any>;
+  GallerySelect: React.FC<any>;
+  GroupIDSelect: React.FC<any>;
+  GroupSelect: React.FC<any>;
+  HeaderImage: React.FC<any>;
+  HoverPopover: React.FC<any>;
+  Icon: React.FC<any>;
+  ImageInput: React.FC<any>;
+  LightboxLink: React.FC<any>;
+  LoadingIndicator: React.FC<any>;
+  "MainNavBar.MenuItems": React.FC<any>;
+  "MainNavBar.UtilityItems": React.FC<any>;
+  ModalSetting: React.FC<any>;
+  NumberSetting: React.FC<any>;
+  PerformerAppearsWithPanel: React.FC<any>;
+  PerformerCard: React.FC<any>;
+  "PerformerCard.Details": React.FC<any>;
+  "PerformerCard.Image": React.FC<any>;
+  "PerformerCard.Overlays": React.FC<any>;
+  "PerformerCard.Popovers": React.FC<any>;
+  "PerformerCard.Title": React.FC<any>;
+  PerformerDetailsPanel: React.FC<any>;
+  "PerformerDetailsPanel.DetailGroup": React.FC<any>;
+  PerformerGalleriesPanel: React.FC<any>;
+  PerformerGroupsPanel: React.FC<any>;
+  PerformerHeaderImage: React.FC<any>;
+  PerformerIDSelect: React.FC<any>;
+  PerformerImagesPanel: React.FC<any>;
+  PerformerPage: React.FC<any>;
+  PerformerScenesPanel: React.FC<any>;
+  PerformerSelect: React.FC<any>;
+  PluginSettings: React.FC<any>;
+  RatingNumber: React.FC<any>;
+  RatingStars: React.FC<any>;
+  RatingSystem: React.FC<any>;
+  SceneFileInfoPanel: React.FC<any>;
+  SceneIDSelect: React.FC<any>;
+  ScenePage: React.FC<any>;
+  "ScenePage.TabContent": React.FC<any>;
+  "ScenePage.Tabs": React.FC<any>;
+  ScenePlayer: React.FC<any>;
+  SceneSelect: React.FC<any>;
+  "SceneCard.Details": React.FC<any>;
+  "SceneCard.Image": React.FC<any>;
+  "SceneCard.Overlays": React.FC<any>;
+  "SceneCard.Popovers": React.FC<any>;
+  SelectSetting: React.FC<any>;
+  Setting: React.FC<any>;
+  SettingGroup: React.FC<any>;
+  SettingModal: React.FC<any>;
+  StringListSetting: React.FC<any>;
+  StringSetting: React.FC<any>;
+  StudioIDSelect: React.FC<any>;
+  StudioSelect: React.FC<any>;
+  SweatDrops: React.FC<any>;
+  TabTitleCounter: React.FC<any>;
+  TagIDSelect: React.FC<any>;
+  "TagCard.Details": React.FC<any>;
+  "TagCard.Image": React.FC<any>;
+  "TagCard.Overlays": React.FC<any>;
+  "TagCard.Popovers": React.FC<any>;
+  "TagCard.Title": React.FC<any>;
+  TagLink: React.FC<any>;
+  TagSelect: React.FC<any>;
+  TruncatedText: React.FC<any>;
 }
 
 interface PatchableComponents {
@@ -1159,64 +1157,32 @@ interface PatchableComponentsBefore {
 interface PatchableComponentsInstead {
   (
     component: "Frontpage",
-    fn: (
-      props: PropsPerformerDetailsPanelDetailGroup,
-      _: object,
-      Original: React.JSX
-    ) => React.JSX.Element[]
+    fn: (props: PropsPerformerDetailsPanelDetailGroup, _: object, Original: React.JSX) => React.JSX.Element[]
   ): void;
   (
     component: "PerformerDetailsPanel.DetailGroup",
-    fn: (
-      props: PropsPerformerDetailsPanelDetailGroup,
-      _: object,
-      Original: React.JSX
-    ) => React.JSX.Element[]
+    fn: (props: PropsPerformerDetailsPanelDetailGroup, _: object, Original: React.JSX) => React.JSX.Element[]
   ): void;
-  (
-    component: "SceneCard",
-    fn: (
-      props: ISceneCardProps,
-      _: object,
-      Original: React.JSX
-    ) => React.JSX.Element[]
-  ): void;
+  (component: "SceneCard", fn: (props: ISceneCardProps, _: object, Original: React.JSX) => React.JSX.Element[]): void;
   (
     component: "SceneCard.Details",
-    fn: (
-      props: ISceneCardProps,
-      _: object,
-      Original: React.JSX
-    ) => React.JSX.Element[]
+    fn: (props: ISceneCardProps, _: object, Original: React.JSX) => React.JSX.Element[]
   ): void;
   (
     component: "SceneCard.Image",
-    fn: (
-      props: ISceneCardProps,
-      _: object,
-      Original: React.JSX
-    ) => React.JSX.Element[]
+    fn: (props: ISceneCardProps, _: object, Original: React.JSX) => React.JSX.Element[]
   ): void;
   (
     component: "SceneCard.Overlays",
-    fn: (
-      props: ISceneCardProps,
-      _: object,
-      Original: React.JSX
-    ) => React.JSX.Element[]
+    fn: (props: ISceneCardProps, _: object, Original: React.JSX) => React.JSX.Element[]
   ): void;
   (
     component: "SceneCard.Popovers",
-    fn: (
-      props: ISceneCardProps,
-      _: object,
-      Original: React.JSX
-    ) => React.JSX.Element[]
+    fn: (props: ISceneCardProps, _: object, Original: React.JSX) => React.JSX.Element[]
   ): void;
 }
 
-interface PropsPerformerDetailsPanelDetailGroup
-  extends React.PropsWithChildren {
+interface PropsPerformerDetailsPanelDetailGroup extends React.PropsWithChildren {
   collapsed: boolean;
   fullWidth: boolean;
   performer: Performer;
@@ -1240,9 +1206,7 @@ interface IFilterProps {
 
 interface IFilterComponentProps<T> extends IFilterProps {
   loadOptions: (inputValue: string) => Promise<Option<T>[]>;
-  onCreate?: (
-    name: string
-  ) => Promise<{ value: string; item: T; message: string }>;
+  onCreate?: (name: string) => Promise<{ value: string; item: T; message: string }>;
   getNamedObject?: (id: string, name: string) => T;
   isValidNewOption?: (inputValue: string, options: T[]) => boolean;
 }
@@ -1317,9 +1281,7 @@ type TagSelectProps = IFilterProps &
 declare namespace PluginApi {
   const React: typeof import("react");
   const ReactDOM: typeof import("react-dom");
-  namespace GQL {
-    
-  }
+  namespace GQL {}
   namespace libraries {
     const Apollo: typeof import("@apollo/client");
     const Bootstrap: typeof import("react-bootstrap");
@@ -1805,5 +1767,5 @@ declare module "mousetrap-pause" {
 
 export interface ListFilterModel {
   makeFindFilter(): FindFilterType;
-  makeFilter() : Record<string, unknown>;
+  makeFilter(): Record<string, unknown>;
 }
