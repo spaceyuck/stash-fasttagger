@@ -14,12 +14,16 @@ interface FastTaggerTagGroupFormProps {
   onGroupRemove?: Function;
 }
 
-interface FastTaggerTagGroupFormState {}
+interface FastTaggerTagGroupFormState {
+  item: FastTaggerGroup;
+}
 
 class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps, FastTaggerTagGroupFormState> {
   constructor(props: FastTaggerTagGroupFormProps) {
     super(props);
-    this.state = {};
+    this.state = {
+      item: props.item
+    };
   }
 
   onUpClicked = () => {
@@ -40,6 +44,10 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
     }
   };
 
+  onNameChanged = (text: string) => {
+    this.props.item.name = text;
+  };
+
   render() {
     return (
       <Card className="card-sm">
@@ -49,8 +57,9 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
               name="name"
               type="text"
               value={this.props.item.name}
+              onChange={event => this.onNameChanged(event.target.value)}
               placeholder="Name..."
-              className="form-control"
+              className="form-control form-control-sm"
               required
             />
           </div>

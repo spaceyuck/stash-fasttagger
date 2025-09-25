@@ -199,6 +199,7 @@ async function migrateEasyTagConfig() {
             const tagGroup = groupsById.get(tagGroupId);
             if (tagGroup) {
               tagToGroup.groupId = tagGroup.id;
+              tagToGroup.name = easyTagsTag.name;
             }
           }
         }
@@ -329,7 +330,10 @@ export async function getTagGroupToTags(): Promise<FastTaggerGroupTags[]> {
     const group = groupsById.get(tagToGroup.groupId);
     const tag = tagsById.get(tagToGroup.tagId);
     if (group && tag) {
-      resultEntriesByGroupId.get(tagToGroup.groupId)?.tags.push(tag);
+      const enhancedTag : FastTaggerEnhancedTag = {...tag};
+      enhancedTag._nameOverride = tagToGroup.name;
+      enhancedTag._tagGroupId = tagToGroup.groupId;
+      resultEntriesByGroupId.get(tagToGroup.groupId)?.tags.push(enhancedTag);
     }
   }
 
@@ -354,9 +358,19 @@ export interface FastTaggerGroup {
 export interface FastTaggerTag {
   tagId: string;
   groupId?: string;
+  /**
+   * override for name
+   */
+  name?: string;
+  tag?: Tag;
 }
 
 export interface FastTaggerGroupTags {
   group: FastTaggerGroup;
-  tags: Tag[];
+  tags: FastTaggerEnhancedTag[];
+}
+
+export interface FastTaggerEnhancedTag extends Tag {
+  _nameOverride?: string;
+  _tagGroupId?: string;
 }

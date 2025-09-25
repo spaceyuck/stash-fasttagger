@@ -1,14 +1,13 @@
 import { ModalComponent } from "./Modal";
+import FastTaggerTagForm from "./FastTaggerTagForn";
 import FastTaggerTagGroupForm from "./FastTaggerTagGroupForn";
 import * as FastTaggerService from "../services/FastTaggerService";
 import { FastTaggerGroup, FastTaggerGroupTags } from "../services/FastTaggerService";
 
 const PluginApi = window.PluginApi;
 const { React } = PluginApi;
-const { Button, Card, Dropdown, Tabs, Tab } = PluginApi.libraries.Bootstrap;
+const { Button, Card, Tabs, Tab } = PluginApi.libraries.Bootstrap;
 const { LoadingIndicator } = PluginApi.components;
-
-let { TagLink } = PluginApi.components;
 
 interface FastTaggerSettingsDialogProps {
   onClose: (accept?: boolean) => void;
@@ -29,8 +28,6 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
   }
 
   async componentDidMount() {
-    await PluginApi.utils.loadComponents([PluginApi.loadableComponents.TagLink]);
-    TagLink  = PluginApi.components.TagLink;
     this.loadTagGroups();
   }
 
@@ -117,39 +114,11 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
                     <div className="row">
                       {groupEntry.tags.map((tag) => (
                         <div className="col-12 col-md-6 col-lg-4">
-                          <Card className="card-sm fast-tagger-card">
-                            <Card.Body>
-                              <div className="d-flex flex-direction-row justify-content-between align-items-center">
-                                <div>
-                                  <TagLink tag={tag} linkType="details"></TagLink>
-                                </div>
-                                <div>
-                                  <Dropdown>
-                                    <Dropdown.Toggle variant="primary" size="sm">
-                                      Move to
-                                    </Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                      {this.state.tagGroupsToTags?.map((targetGroupEntry) => {
-                                        if (targetGroupEntry.group.id != groupEntry.group.id) {
-                                          return (
-                                            <Dropdown.Item onClick={() => this.onTagMove(tag, targetGroupEntry.group)}>
-                                              {targetGroupEntry.group.name}
-                                            </Dropdown.Item>
-                                          )
-                                        }
-                                      })}
-                                      {this.state.tagGroupsToTags && this.state.tagGroupsToTags.length > 0 && (
-                                        <Dropdown.Divider />
-                                      )}
-                                      <Dropdown.Item onClick={() => this.onTagMove(tag, undefined)}>
-                                        No group
-                                      </Dropdown.Item>
-                                    </Dropdown.Menu>
-                                  </Dropdown>
-                                </div>
-                              </div>
-                            </Card.Body>
-                          </Card>
+                          <FastTaggerTagForm
+                            item={tag}
+                            tagGroups={this.state.tagGroupsToTags}
+                            onMoveTagToGroup={(group) => this.onTagMove(tag, group)}
+                          />
                         </div>
                       ))}
                     </div>
