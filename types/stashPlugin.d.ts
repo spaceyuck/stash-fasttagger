@@ -688,6 +688,7 @@ interface IPluginApi {
       };
       DropdownButton: React.FC<any>;
       Dropdown: React.FC<any> & {
+        Divider: React.FC<any>;
         Item: React.FC<any>;
         Menu: React.FC<any>;
         Toggle: React.FC<any>;

@@ -5,8 +5,10 @@ import { FastTaggerGroup, FastTaggerGroupTags } from "../services/FastTaggerServ
 
 const PluginApi = window.PluginApi;
 const { React } = PluginApi;
-const { Button, Card, Dropdown, DropdownButton, Tabs, Tab } = PluginApi.libraries.Bootstrap;
+const { Button, Card, Dropdown, Tabs, Tab } = PluginApi.libraries.Bootstrap;
 const { LoadingIndicator } = PluginApi.components;
+
+let { TagLink } = PluginApi.components;
 
 interface FastTaggerSettingsDialogProps {
   onClose: (accept?: boolean) => void;
@@ -26,7 +28,9 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    await PluginApi.utils.loadComponents([PluginApi.loadableComponents.TagLink]);
+    TagLink  = PluginApi.components.TagLink;
     this.loadTagGroups();
   }
 
@@ -107,24 +111,42 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
             {this.state.loading && <LoadingIndicator />}
             {!this.state.loading &&
               this.state.tagGroupsToTags?.map((groupEntry) => (
-                <Card className="card-sm">
+                <Card className="card-sm fast-tagger-card">
                   <Card.Header>{groupEntry.group.name}</Card.Header>
                   <Card.Body>
                     <div className="row">
                       {groupEntry.tags.map((tag) => (
                         <div className="col-12 col-md-6 col-lg-4">
-                          <Card className="card-sm">
+                          <Card className="card-sm fast-tagger-card">
                             <Card.Body>
-                              <div>{tag.name}</div>
-                              <div>
-                                <DropdownButton variant="primary" title="Move to" drop="end" className="btn-sm">
-                                  {this.state.tagGroupsToTags?.map((targetGroupEntry) => {
-                                    <Dropdown.Item onClick={() => this.onTagMove(tag, targetGroupEntry.group)}>
-                                      {targetGroupEntry.group.name}
-                                    </Dropdown.Item>
-                                  })}
-                                  <Dropdown.Item onClick={() => this.onTagMove(tag, undefined)}>No group</Dropdown.Item>
-                                </DropdownButton>
+                              <div className="d-flex flex-direction-row justify-content-between align-items-center">
+                                <div>
+                                  <TagLink tag={tag} linkType="details"></TagLink>
+                                </div>
+                                <div>
+                                  <Dropdown>
+                                    <Dropdown.Toggle variant="primary" size="sm">
+                                      Move to
+                                    </Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                      {this.state.tagGroupsToTags?.map((targetGroupEntry) => {
+                                        if (targetGroupEntry.group.id != groupEntry.group.id) {
+                                          return (
+                                            <Dropdown.Item onClick={() => this.onTagMove(tag, targetGroupEntry.group)}>
+                                              {targetGroupEntry.group.name}
+                                            </Dropdown.Item>
+                                          )
+                                        }
+                                      })}
+                                      {this.state.tagGroupsToTags && this.state.tagGroupsToTags.length > 0 && (
+                                        <Dropdown.Divider />
+                                      )}
+                                      <Dropdown.Item onClick={() => this.onTagMove(tag, undefined)}>
+                                        No group
+                                      </Dropdown.Item>
+                                    </Dropdown.Menu>
+                                  </Dropdown>
+                                </div>
                               </div>
                             </Card.Body>
                           </Card>
