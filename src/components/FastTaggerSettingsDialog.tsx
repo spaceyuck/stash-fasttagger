@@ -33,38 +33,57 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
   }
 
   loadData = () => {
-    console.debug("loading tag groups and tag groups to tags...");
     this.setState({ loading: true });
-    const tagGroupsPromise = FastTaggerService.getTagGroups().then((tagGroups) => {
-      console.debug("done loading tag groups", tagGroups);
-      this.setState({ tagGroups: tagGroups });
-    });
-    const tagGroupsToTagsPromise = FastTaggerService.getTagGroupToTags().then((tagGroupsToTags) => {
-      console.debug("done loading tag groups to tags", tagGroupsToTags);
-      this.setState({ tagGroupsToTags: tagGroupsToTags });
-    });
+    const tagGroupsPromise = this.doLoadGroups();
+    const tagGroupsToTagsPromise = this.doLoadTags();
     return Promise.all([tagGroupsPromise, tagGroupsToTagsPromise]).then(() => {
       this.setState({ loading: false });
     });
   };
 
+  loadGroups = async () => {
+    this.setState({ loading: true });
+    return this.doLoadGroups().then(() => {
+      this.setState({ loading: false });
+    });
+  };
+
+  loadTags = async () => {
+    this.setState({ loading: true });
+    return this.doLoadTags().then(() => {
+      this.setState({ loading: false });
+    });
+  };
+
+  doLoadGroups = async () => {
+    return FastTaggerService.getTagGroups().then((tagGroups) => {
+      console.debug("done loading tag groups", tagGroups);
+      this.setState({ tagGroups: tagGroups });
+    });
+  };
+
+  doLoadTags = async () => {
+    return FastTaggerService.getTagGroupToTags().then((tagGroupsToTags) => {
+      console.debug("done loading tag groups to tags", tagGroupsToTags);
+      this.setState({ tagGroupsToTags: tagGroupsToTags });
+    });
+  };
+
   onTagMove = (tag: Tag, group?: FastTaggerGroup) => {
     FastTaggerService.moveTagToGroup(tag, group).then(() => {
-      this.loadData();
+      this.loadTags();
     });
   };
 
   onTagChanged = (tag: Tag, name?: string) => {
-    FastTaggerService.updateTag(tag, name).then(() => {
-      this.loadData();
-    });
+    FastTaggerService.updateTag(tag, name);
   };
 
   onGroupAdd = () => {
     FastTaggerService.addTagGroup({
       order: 99999,
     }).then(() => {
-      this.loadData();
+      this.loadGroups();
     });
   };
 
@@ -76,25 +95,25 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
 
   onGroupUp = (tagGroup: FastTaggerGroup) => {
     FastTaggerService.moveTagGroupUp(tagGroup).then(() => {
-      this.loadData();
+      this.loadGroups();
     });
   };
 
   onGroupDown = (tagGroup: FastTaggerGroup) => {
     FastTaggerService.moveTagGroupDown(tagGroup).then(() => {
-      this.loadData();
+      this.loadGroups();
     });
   };
 
   onGroupRemove = (tagGroup: FastTaggerGroup) => {
     FastTaggerService.removeTagGroup(tagGroup).then(() => {
-      this.loadData();
+      this.loadGroups();
     });
   };
 
   onGroupChanged = (tagGroup: FastTaggerGroup, name?: string, conditionTagId?: string) => {
     FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId).then(() => {
-      this.loadData();
+      this.loadTags();
     });
   };
 
@@ -158,6 +177,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
                             item={tag}
                             tagGroups={this.state.tagGroupsToTags}
                             onMoveTagToGroup={(group) => this.onTagMove(tag, group)}
+                            onChanged={(name) => this.onTagChanged(tag, name)}
                           />
                         </div>
                       ))}

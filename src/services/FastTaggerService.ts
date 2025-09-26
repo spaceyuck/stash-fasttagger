@@ -405,7 +405,7 @@ export async function moveTagToGroup(tag: Tag, group?: FastTaggerGroup) {
   tagToGroups.groupId = group?.id;
 }
 
-export async function updateTag(tag: Tag, name?: string) {
+export async function updateTag(tag: FastTaggerEnhancedTag, name?: string) {
   const tagToGroups = tagToGroupsByTagId.get(tag.id);
   if (!tagToGroups) {
     return;

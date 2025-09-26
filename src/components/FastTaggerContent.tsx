@@ -88,16 +88,12 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
   };
   
   onSettingsClick = () => {
-    this.setState((state) => {
-      return { showSettings: true };
-    });
+    this.setState({ showSettings: true });
   };
 
   onSettingsClose = (accept: boolean | undefined) => {
     this.setState({ showSettings: false });
-    if (accept) {
-      this.loadData();
-    }
+    this.loadData();
   };
 
   maybeRenderSettingsDialog = () => {

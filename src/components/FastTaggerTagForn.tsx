@@ -14,10 +14,12 @@ interface FastTaggerTagFormProps {
   item: FastTaggerEnhancedTag;
   tagGroups?: FastTaggerGroupTags[];
   onMoveTagToGroup: (group?: FastTaggerGroup) => void;
+  onChanged?: (name?: string) => void;
 }
 
 interface FastTaggerTagFormState {
   name?: string;
+  changed?: boolean
 }
 
 class FastTaggerTagGroupForm extends React.Component<FastTaggerTagFormProps, FastTaggerTagFormState> {
@@ -31,7 +33,16 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagFormProps, Fas
   onNameChanged = (text: string) => {
     this.setState({
       name: text,
+      changed: true,
     });
+  };
+
+  onFocusLost = () => {
+    if (this.state.changed) {
+      if (this.props.onChanged) {
+        this.props.onChanged(this.state.name);
+      }
+    }
   };
 
   onTagMove = (group?: FastTaggerGroup) => {
@@ -57,6 +68,7 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagFormProps, Fas
                   className="form-control form-control-sm"
                   value={this.state.name}
                   onChange={(event) => this.onNameChanged(event.target.value)}
+                  onBlur={(event) => this.onFocusLost()}
                 />
               </div>
             </div>
