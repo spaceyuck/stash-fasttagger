@@ -19,16 +19,23 @@ interface FastTaggerContentState {
   showSettings?: boolean;
   tagGroups?: FastTaggerGroup[];
   tagGroupsToTags?: FastTaggerGroupTags[];
+  excludeIds?: Set<String>, 
 }
 
 class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTaggerContentState> {
   constructor(props: FastTaggerContentProps) {
     super(props);
-    this.state = {};
+    this.state = {
+      excludeIds: props.excludeIds ? new Set(props.excludeIds) : undefined
+    };
   }
 
   async componentDidMount() {
     this.loadData();
+  }
+
+  static getDerivedStateFromProps(props: FastTaggerContentProps, state: FastTaggerContentState) {
+    state.excludeIds = props.excludeIds ? new Set(props.excludeIds) : undefined;
   }
 
   loadData = () => {
@@ -72,6 +79,14 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     return idx !== undefined && idx > -1;
   };
 
+  isTagExcluded = (tagId: string): boolean => {
+    if (this.state.excludeIds) {
+      return this.state.excludeIds.has(tagId);
+    } else {
+      return false;
+    }
+  };
+  
   onSettingsClick = () => {
     this.setState((state) => {
       return { showSettings: true };
@@ -117,11 +132,6 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     return (
       <>
         {this.maybeRenderSettingsDialog()}
-        <div>
-          {this.props.excludeIds?.map((excludedId) => (
-            <span>{excludedId}, </span>
-          ))}
-        </div>
         {!this.state.loading &&
           this.state.tagGroupsToTags
             ?.filter(
@@ -145,6 +155,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                           size="sm"
                           className={this.isTagSelected(tag.id) ? "btn-success" : ""}
                           onClick={() => this.onTagClick(tag)}
+                          disabled={this.isTagExcluded(tag.id)}
                         >
                           {tag._nameOverride ? tag._nameOverride : tag.name}
                         </Button>
