@@ -2,8 +2,8 @@ import FastTaggerContent from "@components/FastTaggerContent";
 
 const PluginApi = window.PluginApi;
 const { React, GQL } = PluginApi;
-const { Button } = PluginApi.libraries.Bootstrap;
-const { FormattedMessage } = PluginApi.libraries.Intl;
+const { Icon } = PluginApi.components;
+const { faChevronDown, faChevronUp } = PluginApi.libraries.FontAwesomeSolid;
 
 interface IFilterValueProps<T> {
   ids?: string[];
@@ -61,11 +61,17 @@ class FastTaggerTagSelectAddon extends React.Component<TagSelectProps, FastTagge
 
     return (
       <>
-        <div>
-          <Button className="plugin-fast-tagger-open-button" variant="primary" onClick={this.onToggleClick}>
-            {!this.state.isOpen && <FormattedMessage id="plugin.fast-tagger.open" />}
-            {this.state.isOpen && <FormattedMessage id="plugin.fast-tagger.close" />}
-          </Button>
+        <div className="d-flex flex-row justify-content-center">
+          <div>
+            <a href="javascript:void(0)" className="plugin-fast-tagger-toggle" onClick={this.onToggleClick}>
+              {!this.state.isOpen && <Icon icon={faChevronDown}></Icon>}
+              {this.state.isOpen && <Icon icon={faChevronUp}></Icon>}
+              {!this.state.isOpen && "Open Quick Tag Editor"}
+              {this.state.isOpen && "Close Quick Tag Editor"}
+              {!this.state.isOpen && <Icon icon={faChevronDown}></Icon>}
+              {this.state.isOpen && <Icon icon={faChevronUp}></Icon>}
+            </a>
+          </div>
         </div>
         {this.state.isOpen && (
           <FastTaggerContent

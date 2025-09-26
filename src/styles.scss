@@ -4,6 +4,10 @@
 
     overflow: visible;
 
+    .tag-item.badge {
+        margin-left: 0;
+    }
+
     .btn-group {
         display: flex;
         flex-direction: row;

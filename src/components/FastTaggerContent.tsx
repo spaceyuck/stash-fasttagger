@@ -5,7 +5,6 @@ import { FastTaggerGroup, FastTaggerGroupTags } from "../services/FastTaggerServ
 const PluginApi = window.PluginApi;
 const { React } = window.PluginApi;
 const { Button, ButtonGroup, Card, Overlay, OverlayTrigger, Popover } = PluginApi.libraries.Bootstrap;
-const { FormattedMessage } = PluginApi.libraries.Intl;
 const { faGear } = PluginApi.libraries.FontAwesomeSolid;
 const { Icon, LoadingIndicator } = PluginApi.components;
 
@@ -48,11 +47,11 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     });
   };
 
-  onTagClick = (tag:Tag) => {
+  onTagClick = (tag: Tag) => {
     let ret: Tag[] = [];
     // is currently selected -> needs to be removed
     if (this.isTagSelected(tag)) {
-      this.props.values?.forEach(e => {
+      this.props.values?.forEach((e) => {
         if (e.id != tag.id) {
           ret.push(e);
         }
@@ -60,7 +59,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     }
     // is currently not selected -> needs to be added
     else {
-      this.props.values?.forEach(e => {
+      this.props.values?.forEach((e) => {
         ret.push(e);
       });
       ret.push(tag);
@@ -68,10 +67,10 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     this.props.onSelect?.(ret);
   };
 
-  isTagSelected = (tag:Tag) : boolean => {
+  isTagSelected = (tag: Tag): boolean => {
     const idx = this.props.values?.findIndex((e) => e.id == tag.id);
     return idx !== undefined && idx > -1;
-  }
+  };
 
   onSettingsClick = () => {
     this.setState((state) => {
@@ -80,9 +79,8 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
   };
 
   onSettingsClose = (accept: boolean | undefined) => {
-    this.setState((state) => {
-      return { showSettings: false };
-    });
+    this.setState({ showSettings: false });
+    this.loadTagGroups();
   };
 
   maybeRenderSettingsDialog = () => {
@@ -118,16 +116,24 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     return (
       <>
         {this.maybeRenderSettingsDialog()}
-        <div>{this.props.excludeIds?.map((excludedId) => <span>{excludedId}, </span>)}</div>
+        <div>
+          {this.props.excludeIds?.map((excludedId) => (
+            <span>{excludedId}, </span>
+          ))}
+        </div>
         {!this.state.loading &&
-          this.state.tagGroupsToTags?.map((groupEntry) => (
+          this.state.tagGroupsToTags?.filter((groupEntry) => !!groupEntry.group).map((groupEntry) => (
             <Card className="card-sm fast-tagger-card">
               <Card.Header>{groupEntry.group ? groupEntry.group.name : "Ungrouped tags"}</Card.Header>
               <Card.Body>
                 <ButtonGroup aria-label="Basic example">
                   {groupEntry.tags.map((tag) => (
                     <OverlayTrigger placement="right" delay={{ show: 0, hide: 0 }} overlay={this.renderTagPopover(tag)}>
-                      <Button variant="secondary" className={this.isTagSelected(tag) ? "btn-success" : ""} onClick={() => this.onTagClick(tag)}>
+                      <Button
+                        variant="secondary"
+                        className={this.isTagSelected(tag) ? "btn-success" : ""}
+                        onClick={() => this.onTagClick(tag)}
+                      >
                         {tag._nameOverride ? tag._nameOverride : tag.name}
                       </Button>
                     </OverlayTrigger>
@@ -138,8 +144,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
           ))}
         <div>
           <Button className="plugin-fast-tagger-settings-button" variant="secondary" onClick={this.onSettingsClick}>
-            <Icon icon={faGear} />
-            <FormattedMessage id="plugin.fast-tagger.settings" />
+            <Icon icon={faGear} /> Settings
           </Button>
         </div>
       </>
