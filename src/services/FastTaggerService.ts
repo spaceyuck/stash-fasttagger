@@ -22,13 +22,9 @@ export async function init() {
     console.debug("initializing fast tagger data");
     loadConfig().then(() => {
       loadTags().then(() => {
-        if (groups.length == 0) {
-          migrateEasyTagConfig().then(() => {
-            initialized = true;
-            initializePromise = undefined;
-            resolve();
-          });
-        }
+        initialized = true;
+        initializePromise = undefined;
+        resolve();
       });
     });
   });
@@ -64,7 +60,7 @@ async function saveConfig() {
   });
 }
 
-export async function clearConfig() {
+async function clearConfig() {
   await window.csLib.setConfiguration("fastTagger", {
     groups: "[]",
     tagToGroups: "[]",
@@ -225,6 +221,25 @@ interface EasyTagTag {
   stashSortName: string;
 }
 
+export async function applyChanges() {
+  return saveConfig();
+}
+
+export async function revertChanges() {
+  initialized = false;
+  return init();
+}
+
+export async function resetConfig() {
+  return clearConfig();
+}
+
+export async function importEasyTag() {
+  await clearConfig();
+  await init();
+  return migrateEasyTagConfig();
+}
+
 export async function getTagGroups(): Promise<FastTaggerGroup[]> {
   await init();
 
@@ -259,7 +274,24 @@ export async function removeTagGroup(group: FastTaggerGroup) {
   groups.splice(idx, 1);
   groupsById.delete(group.id);
 
+  for (const tagToGroup of tagToGroups) {
+    if (tagToGroup.groupId == group.id) {
+      tagToGroup.groupId = undefined;
+    }
+  }
+
   _finalzeTagGroups();
+}
+
+export async function updateTagGroup(group: FastTaggerGroup, name?: string) {
+  await init();
+
+  const idx = groups.findIndex((e) => e.id == group.id);
+  if (idx < 0) {
+    return;
+  }
+
+  groups[idx].name = name;
 }
 
 export async function moveTagGroupUp(group: FastTaggerGroup) {
@@ -321,19 +353,21 @@ export async function getTagGroupToTags(): Promise<FastTaggerGroupTags[]> {
     resultEntriesByGroupId.set(group.id, entry);
     ret.push(entry);
   }
+  const ungroupedEntry: FastTaggerGroupTags = {
+    group: undefined,
+    tags: [],
+  };
+  resultEntriesByGroupId.set("_", ungroupedEntry);
+  ret.push(ungroupedEntry);
 
   for (const tagToGroup of tagToGroups) {
-    if (!tagToGroup.groupId) {
-      continue;
-    }
-
-    const group = groupsById.get(tagToGroup.groupId);
+    const group = tagToGroup.groupId ? groupsById.get(tagToGroup.groupId) : undefined;
     const tag = tagsById.get(tagToGroup.tagId);
-    if (group && tag) {
-      const enhancedTag : FastTaggerEnhancedTag = {...tag};
+    if (tag) {
+      const enhancedTag: FastTaggerEnhancedTag = { ...tag };
       enhancedTag._nameOverride = tagToGroup.name;
       enhancedTag._tagGroupId = tagToGroup.groupId;
-      resultEntriesByGroupId.get(tagToGroup.groupId)?.tags.push(enhancedTag);
+      resultEntriesByGroupId.get(tagToGroup.groupId ? tagToGroup.groupId : "_")?.tags.push(enhancedTag);
     }
   }
 
@@ -347,6 +381,15 @@ export async function moveTagToGroup(tag: Tag, group?: FastTaggerGroup) {
   }
 
   tagToGroups.groupId = group?.id;
+}
+
+export async function updateTag(tag: Tag, name?: string) {
+  const tagToGroups = tagToGroupsByTagId.get(tag.id);
+  if (!tagToGroups) {
+    return;
+  }
+
+  tagToGroups.name = name;
 }
 
 export interface FastTaggerGroup {
@@ -366,7 +409,7 @@ export interface FastTaggerTag {
 }
 
 export interface FastTaggerGroupTags {
-  group: FastTaggerGroup;
+  group?: FastTaggerGroup;
   tags: FastTaggerEnhancedTag[];
 }
 

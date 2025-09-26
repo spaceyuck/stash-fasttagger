@@ -15,6 +15,7 @@ interface FastTaggerSettingsDialogProps {
 
 interface FastTaggerSettingsDialogState {
   loading?: boolean;
+  saving?: boolean;
   tagGroups?: FastTaggerGroup[];
   tagGroupsToTags?: FastTaggerGroupTags[];
 }
@@ -53,7 +54,13 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     });
   };
 
-  onAddClicked = () => {
+  onTagChanged = (tag: Tag, name?: string) => {
+    FastTaggerService.updateTag(tag, name).then(() => {
+      this.loadTagGroups();
+    });
+  };
+
+  onGroupAdd = () => {
     FastTaggerService.addTagGroup({
       order: 99999,
     }).then(() => {
@@ -61,8 +68,8 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     });
   };
 
-  onClearClicked = () => {
-    FastTaggerService.clearConfig().then(() => {
+  onClear = () => {
+    FastTaggerService.resetConfig().then(() => {
       this.loadTagGroups();
     });
   };
@@ -85,23 +92,56 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     });
   };
 
+  onGroupChanged = (tagGroup: FastTaggerGroup, name?: string) => {
+    FastTaggerService.updateTagGroup(tagGroup, name).then(() => {
+      this.loadTagGroups();
+    });
+  };
+
+  onApply = () => {
+    this.setState({saving: true});
+    FastTaggerService.applyChanges().then(() => {
+      this.setState({saving: false});
+      this.props.onClose(true);
+    })
+  };
+
+  onCancel = () => {
+    this.setState({saving: true});
+    FastTaggerService.revertChanges().then(() => {
+      this.setState({saving: false});
+      this.props.onClose();
+    })
+  };
+
+  onImportEasyTagConfig = () => {
+    this.setState({saving: true});
+    FastTaggerService.importEasyTag().then(() => {
+      this.setState({saving: false});
+      this.loadTagGroups();
+    })
+  };
+
   render() {
     return (
       <ModalComponent
         show
+        isRunning={this.state.loading || this.state.saving}
         header="Settings"
         accept={{
-          onClick: () => {
-            this.props.onClose(true);
-          },
+          onClick: this.onApply,
           text: /*intl.formatMessage({ id: "actions.apply" })*/ "Apply",
         }}
         cancel={{
-          onClick: () => this.props.onClose(),
+          onClick: this.onCancel,
           text: /*intl.formatMessage({ id: "actions.cancel" })*/ "Cancel",
           variant: "secondary",
         }}
         modalProps={{ size: "xl", dialogClassName: "scrape-dialog" }}
+        leftFooterButtons={[
+          {text: "Clear Config", variant: "danger", onClick: this.onClear},
+          {text: "Import from EasyTag", variant: "secondary", onClick: this.onImportEasyTagConfig}
+        ]}
       >
         <Tabs defaultActiveKey="groups" justify>
           <Tab eventKey="tags" title="Tags">
@@ -109,7 +149,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
             {!this.state.loading &&
               this.state.tagGroupsToTags?.map((groupEntry) => (
                 <Card className="card-sm fast-tagger-card">
-                  <Card.Header>{groupEntry.group.name}</Card.Header>
+                  <Card.Header>{groupEntry.group ? groupEntry.group.name : "Ungrouped tags"}</Card.Header>
                   <Card.Body>
                     <div className="row">
                       {groupEntry.tags.map((tag) => (
@@ -134,24 +174,18 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
                   <div className="col-sm-12 col-md-6 col-lg-4">
                     <FastTaggerTagGroupForm
                       item={tagGroup}
-                      onGroupUp={() => this.onGroupUp(tagGroup)}
-                      onGroupDown={() => this.onGroupDown(tagGroup)}
-                      onGroupRemove={() => this.onGroupRemove(tagGroup)}
+                      onUp={() => this.onGroupUp(tagGroup)}
+                      onDown={() => this.onGroupDown(tagGroup)}
+                      onRemove={() => this.onGroupRemove(tagGroup)}
+                      onChanged={(name) => this.onGroupChanged(tagGroup, name)}
                     />
                   </div>
                 ))}
             </div>
             {!this.state.loading && (
               <div>
-                <Button variant="primary" onClick={this.onAddClicked}>
+                <Button variant="primary" onClick={this.onGroupAdd}>
                   Add
-                </Button>
-              </div>
-            )}
-            {!this.state.loading && (
-              <div>
-                <Button variant="danger" onClick={this.onClearClicked}>
-                  Clear Config
                 </Button>
               </div>
             )}

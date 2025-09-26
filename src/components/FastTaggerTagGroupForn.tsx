@@ -9,43 +9,57 @@ const { Icon } = PluginApi.components;
 
 interface FastTaggerTagGroupFormProps {
   item: FastTaggerGroup;
-  onGroupUp?: Function;
-  onGroupDown?: Function;
-  onGroupRemove?: Function;
+  onUp?: () => void;
+  onDown?: () => void;
+  onRemove?: () => void;
+  onChanged?: (name?: string) => void;
 }
 
 interface FastTaggerTagGroupFormState {
-  item: FastTaggerGroup;
+  name?: string;
+  changed: boolean;
 }
 
 class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps, FastTaggerTagGroupFormState> {
   constructor(props: FastTaggerTagGroupFormProps) {
     super(props);
     this.state = {
-      item: props.item
+      name: props.item.name,
+      changed: false,
     };
   }
 
   onUpClicked = () => {
-    if (this.props.onGroupUp) {
-      this.props.onGroupUp();
+    if (this.props.onUp) {
+      this.props.onUp();
     }
   };
 
   onDownClicked = () => {
-    if (this.props.onGroupDown) {
-      this.props.onGroupDown();
+    if (this.props.onDown) {
+      this.props.onDown();
     }
   };
 
   onRemoveClicked = () => {
-    if (this.props.onGroupRemove) {
-      this.props.onGroupRemove();
+    if (this.props.onRemove) {
+      this.props.onRemove();
     }
   };
 
   onNameChanged = (text: string) => {
-    this.props.item.name = text;
+    this.setState({
+      name: text,
+      changed: true,
+    });
+  };
+
+  onFocusLost = () => {
+    if (this.state.changed) {
+      if (this.props.onChanged) {
+        this.props.onChanged(this.state.name);
+      }
+    }
   };
 
   render() {
@@ -56,8 +70,9 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
             <input
               name="name"
               type="text"
-              value={this.props.item.name}
-              onChange={event => this.onNameChanged(event.target.value)}
+              value={this.state.name}
+              onChange={(event) => this.onNameChanged(event.target.value)}
+              onBlur={(event) => this.onFocusLost()}
               placeholder="Name..."
               className="form-control form-control-sm"
               required
@@ -68,12 +83,12 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
           <div className="row">
             <div className="col-md-6">
               <ButtonGroup>
-                {this.props.onGroupUp && (
+                {this.props.onUp && (
                   <Button size="xs" onClick={this.onUpClicked}>
                     <Icon icon={faArrowUp} />
                   </Button>
                 )}
-                {this.props.onGroupDown && (
+                {this.props.onDown && (
                   <Button size="xs" onClick={this.onDownClicked}>
                     <Icon icon={faArrowDown} />
                   </Button>
@@ -82,7 +97,7 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
               <span>{this.props.item.order}</span>
             </div>
             <div className="col-md-6 text-right">
-              {this.props.onGroupRemove && (
+              {this.props.onRemove && (
                 <Button size="xs" variant="danger" onClick={this.onRemoveClicked}>
                   <Icon icon={faTrash} />
                 </Button>

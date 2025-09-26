@@ -67,10 +67,10 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagFormProps, Fas
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   {this.props.tagGroups?.map((targetGroupEntry) => {
-                    if (targetGroupEntry.group.id != this.props.item._tagGroupId) {
+                    if (targetGroupEntry.group?.id != this.props.item._tagGroupId) {
                       return (
                         <Dropdown.Item onClick={() => this.onTagMove(targetGroupEntry.group)}>
-                          {targetGroupEntry.group.name}
+                          {targetGroupEntry.group?.name}
                         </Dropdown.Item>
                       );
                     }

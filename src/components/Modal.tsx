@@ -5,6 +5,8 @@ const { FormattedMessage } = PluginApi.libraries.Intl;
 
 interface IButton {
   text?: string;
+  textId?: string;
+  description?: string;
   variant?: string;
   onClick?: () => void;
 }
@@ -17,12 +19,13 @@ interface IModal {
   icon?: string;
   cancel?: IButton;
   accept?: IButton;
+  otherBottons?: IButton[];
   isRunning?: boolean;
   disabled?: boolean;
   modalProps?: any;
   dialogClassName?: string;
-  footerButtons?: React.ReactNode;
-  leftFooterButtons?: React.ReactNode;
+  footerButtons?: IButton[];
+  leftFooterButtons?: IButton[];
 }
 
 const defaultOnHide = () => {};
@@ -55,16 +58,43 @@ export const ModalComponent: React.FC<IModal> = ({
     </Modal.Header>
     <Modal.Body>{children}</Modal.Body>
     <Modal.Footer className="ModalFooter">
-      <div>{leftFooterButtons}</div>
       <div>
-        {footerButtons}
-        {cancel ? (
+        {leftFooterButtons?.map((leftFooterButton) => (
           <Button
             disabled={isRunning}
-            variant={cancel.variant ?? "primary"}
-            onClick={cancel.onClick}
+            variant={leftFooterButton.variant ?? "primary"}
+            onClick={leftFooterButton.onClick}
             className="ml-2"
           >
+            {leftFooterButton.text ?? (
+              <FormattedMessage
+                id={leftFooterButton.textId}
+                defaultMessage={leftFooterButton.text}
+                description={leftFooterButton.description}
+              />
+            )}
+          </Button>
+        ))}
+      </div>
+      <div>
+        {footerButtons?.map((footerButton) => (
+          <Button
+            disabled={isRunning}
+            variant={footerButton.variant ?? "primary"}
+            onClick={footerButton.onClick}
+            className="ml-2"
+          >
+            {footerButton.text ?? (
+              <FormattedMessage
+                id={footerButton.textId}
+                defaultMessage={footerButton.text}
+                description={footerButton.description}
+              />
+            )}
+          </Button>
+        ))}
+        {cancel ? (
+          <Button disabled={isRunning} variant={cancel.variant ?? "primary"} onClick={cancel.onClick} className="ml-2">
             {cancel.text ?? (
               <FormattedMessage
                 id="actions.cancel"
@@ -86,11 +116,7 @@ export const ModalComponent: React.FC<IModal> = ({
             <Spinner animation="border" role="status" size="sm" />
           ) : (
             accept?.text ?? (
-              <FormattedMessage
-                id="actions.close"
-                defaultMessage="Close"
-                description="Closes the current modal."
-              />
+              <FormattedMessage id="actions.close" defaultMessage="Close" description="Closes the current modal." />
             )
           )}
         </Button>
