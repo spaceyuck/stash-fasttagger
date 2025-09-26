@@ -1,21 +1,25 @@
+import * as FastTaggerService from "../services/FastTaggerService";
 import { FastTaggerGroup } from "../services/FastTaggerService";
 
 const PluginApi = window.PluginApi;
 const { React } = window.PluginApi;
 const { Button, ButtonGroup, Card } = PluginApi.libraries.Bootstrap;
 const { faArrowUp, faArrowDown, faTrash } = PluginApi.libraries.FontAwesomeSolid;
-const { Icon } = PluginApi.components;
+const { Icon, LoadingIndicator } = PluginApi.components;
 
 interface FastTaggerTagGroupFormProps {
   item: FastTaggerGroup;
   onUp?: () => void;
   onDown?: () => void;
   onRemove?: () => void;
-  onChanged?: (name?: string) => void;
+  onChanged?: (name?: string, conditionTagId?: string) => void;
 }
 
 interface FastTaggerTagGroupFormState {
+  loading: boolean;
+  tags?: Tag[];
   name?: string;
+  conditionTagId?: string;
   changed: boolean;
 }
 
@@ -23,10 +27,24 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
   constructor(props: FastTaggerTagGroupFormProps) {
     super(props);
     this.state = {
+      loading: false,
       name: props.item.name,
+      conditionTagId: props.item.conditionTagId,
       changed: false,
     };
   }
+
+  async componentDidMount() {
+    this.loadData();
+  }
+
+  loadData = () => {
+    this.setState({ loading: true }, () => {
+      return FastTaggerService.getTags().then((tags) => {
+        this.setState({ tags: tags, loading: false });
+      });
+    });
+  };
 
   onUpClicked = () => {
     if (this.props.onUp) {
@@ -53,15 +71,26 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
     });
   };
 
+  onConditionChanged = (tagId?: string) => {
+    this.setState({
+      conditionTagId: tagId,
+      changed: true,
+    });
+  };
+
   onFocusLost = () => {
     if (this.state.changed) {
       if (this.props.onChanged) {
-        this.props.onChanged(this.state.name);
+        this.props.onChanged(this.state.name, this.state.conditionTagId);
       }
     }
   };
 
   render() {
+    if (this.state.loading) {
+      return <LoadingIndicator />;
+    }
+
     return (
       <Card className="card-sm">
         <Card.Body>
@@ -76,6 +105,20 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
               className="form-control form-control-sm"
               required
             />
+          </div>
+          <div>
+            <select
+              className="form-control"
+              aria-placeholder="Selecto Tag for group condition"
+              value={this.state.conditionTagId}
+              onChange={(event) => this.onConditionChanged(event.target.value)}
+              onBlur={(event) => this.onFocusLost()}
+            >
+              <option value="">---No Condition---</option>
+              {this.state.tags?.map((tag) => (
+                <option value={tag.id}>{tag.name}</option>
+              ))}
+            </select>
           </div>
         </Card.Body>
         <Card.Footer>

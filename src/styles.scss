@@ -1,20 +1,19 @@
 @use "sass:math";
 
 .card.fast-tagger-card {
+  overflow: visible;
 
-    overflow: visible;
+  .tag-item.badge {
+    margin-left: 0;
+  }
 
-    .tag-item.badge {
-        margin-left: 0;
+  .btn-group {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    .btn {
+      text-wrap: nowrap;
     }
-
-    .btn-group {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-
-        .btn {
-            text-wrap: nowrap;
-        }
-    }
+  }
 }

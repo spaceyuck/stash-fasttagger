@@ -28,10 +28,10 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
   }
 
   async componentDidMount() {
-    this.loadTagGroups();
+    this.loadData();
   }
 
-  loadTagGroups = () => {
+  loadData = () => {
     console.debug("loading tag groups and tag groups to tags...");
     this.setState({ loading: true });
     const tagGroupsPromise = FastTaggerService.getTagGroups().then((tagGroups) => {
@@ -50,7 +50,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
   onTagClick = (tag: Tag) => {
     let ret: Tag[] = [];
     // is currently selected -> needs to be removed
-    if (this.isTagSelected(tag)) {
+    if (this.isTagSelected(tag.id)) {
       this.props.values?.forEach((e) => {
         if (e.id != tag.id) {
           ret.push(e);
@@ -67,8 +67,8 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     this.props.onSelect?.(ret);
   };
 
-  isTagSelected = (tag: Tag): boolean => {
-    const idx = this.props.values?.findIndex((e) => e.id == tag.id);
+  isTagSelected = (tagId: String): boolean => {
+    const idx = this.props.values?.findIndex((e) => e.id == tagId);
     return idx !== undefined && idx > -1;
   };
 
@@ -80,7 +80,9 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
 
   onSettingsClose = (accept: boolean | undefined) => {
     this.setState({ showSettings: false });
-    this.loadTagGroups();
+    if (accept) {
+      this.loadData();
+    }
   };
 
   maybeRenderSettingsDialog = () => {
@@ -122,26 +124,36 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
           ))}
         </div>
         {!this.state.loading &&
-          this.state.tagGroupsToTags?.filter((groupEntry) => !!groupEntry.group).map((groupEntry) => (
-            <Card className="card-sm fast-tagger-card">
-              <Card.Header>{groupEntry.group ? groupEntry.group.name : "Ungrouped tags"}</Card.Header>
-              <Card.Body>
-                <ButtonGroup aria-label="Basic example">
-                  {groupEntry.tags.map((tag) => (
-                    <OverlayTrigger placement="right" delay={{ show: 0, hide: 0 }} overlay={this.renderTagPopover(tag)}>
-                      <Button
-                        variant="secondary"
-                        className={this.isTagSelected(tag) ? "btn-success" : ""}
-                        onClick={() => this.onTagClick(tag)}
+          this.state.tagGroupsToTags
+            ?.filter(
+              (groupEntry) =>
+                !!groupEntry.group &&
+                (!groupEntry.group.conditionTagId || this.isTagSelected(groupEntry.group.conditionTagId))
+            )
+            .map((groupEntry) => (
+              <Card className="card-sm fast-tagger-card">
+                <Card.Header>{groupEntry.group?.name}</Card.Header>
+                <Card.Body>
+                  <ButtonGroup aria-label="Basic example">
+                    {groupEntry.tags.map((tag) => (
+                      <OverlayTrigger
+                        placement="right"
+                        delay={{ show: 0, hide: 0 }}
+                        overlay={this.renderTagPopover(tag)}
                       >
-                        {tag._nameOverride ? tag._nameOverride : tag.name}
-                      </Button>
-                    </OverlayTrigger>
-                  ))}
-                </ButtonGroup>
-              </Card.Body>
-            </Card>
-          ))}
+                        <Button
+                          variant="secondary"
+                          className={this.isTagSelected(tag.id) ? "btn-success" : ""}
+                          onClick={() => this.onTagClick(tag)}
+                        >
+                          {tag._nameOverride ? tag._nameOverride : tag.name}
+                        </Button>
+                      </OverlayTrigger>
+                    ))}
+                  </ButtonGroup>
+                </Card.Body>
+              </Card>
+            ))}
         <div>
           <Button className="plugin-fast-tagger-settings-button" variant="secondary" onClick={this.onSettingsClick}>
             <Icon icon={faGear} /> Settings

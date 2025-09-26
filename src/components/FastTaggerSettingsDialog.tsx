@@ -29,10 +29,10 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
   }
 
   async componentDidMount() {
-    this.loadTagGroups();
+    this.loadData();
   }
 
-  loadTagGroups = () => {
+  loadData = () => {
     console.debug("loading tag groups and tag groups to tags...");
     this.setState({ loading: true });
     const tagGroupsPromise = FastTaggerService.getTagGroups().then((tagGroups) => {
@@ -50,13 +50,13 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
 
   onTagMove = (tag: Tag, group?: FastTaggerGroup) => {
     FastTaggerService.moveTagToGroup(tag, group).then(() => {
-      this.loadTagGroups();
+      this.loadData();
     });
   };
 
   onTagChanged = (tag: Tag, name?: string) => {
     FastTaggerService.updateTag(tag, name).then(() => {
-      this.loadTagGroups();
+      this.loadData();
     });
   };
 
@@ -64,62 +64,62 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     FastTaggerService.addTagGroup({
       order: 99999,
     }).then(() => {
-      this.loadTagGroups();
+      this.loadData();
     });
   };
 
   onClear = () => {
     FastTaggerService.resetConfig().then(() => {
-      this.loadTagGroups();
+      this.loadData();
     });
   };
 
   onGroupUp = (tagGroup: FastTaggerGroup) => {
     FastTaggerService.moveTagGroupUp(tagGroup).then(() => {
-      this.loadTagGroups();
+      this.loadData();
     });
   };
 
   onGroupDown = (tagGroup: FastTaggerGroup) => {
     FastTaggerService.moveTagGroupDown(tagGroup).then(() => {
-      this.loadTagGroups();
+      this.loadData();
     });
   };
 
   onGroupRemove = (tagGroup: FastTaggerGroup) => {
     FastTaggerService.removeTagGroup(tagGroup).then(() => {
-      this.loadTagGroups();
+      this.loadData();
     });
   };
 
-  onGroupChanged = (tagGroup: FastTaggerGroup, name?: string) => {
-    FastTaggerService.updateTagGroup(tagGroup, name).then(() => {
-      this.loadTagGroups();
+  onGroupChanged = (tagGroup: FastTaggerGroup, name?: string, conditionTagId?: string) => {
+    FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId).then(() => {
+      this.loadData();
     });
   };
 
   onApply = () => {
-    this.setState({saving: true});
+    this.setState({ saving: true });
     FastTaggerService.applyChanges().then(() => {
-      this.setState({saving: false});
+      this.setState({ saving: false });
       this.props.onClose(true);
-    })
+    });
   };
 
   onCancel = () => {
-    this.setState({saving: true});
+    this.setState({ saving: true });
     FastTaggerService.revertChanges().then(() => {
-      this.setState({saving: false});
+      this.setState({ saving: false });
       this.props.onClose();
-    })
+    });
   };
 
   onImportEasyTagConfig = () => {
-    this.setState({saving: true});
+    this.setState({ saving: true });
     FastTaggerService.importEasyTag().then(() => {
-      this.setState({saving: false});
-      this.loadTagGroups();
-    })
+      this.setState({ saving: false });
+      this.loadData();
+    });
   };
 
   render() {
@@ -139,8 +139,8 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
         }}
         modalProps={{ size: "xl", dialogClassName: "scrape-dialog" }}
         leftFooterButtons={[
-          {text: "Clear Config", variant: "danger", onClick: this.onClear},
-          {text: "Import from EasyTag", variant: "secondary", onClick: this.onImportEasyTagConfig}
+          { text: "Clear Config", variant: "danger", onClick: this.onClear },
+          { text: "Import from EasyTag", variant: "secondary", onClick: this.onImportEasyTagConfig },
         ]}
       >
         <Tabs defaultActiveKey="groups" justify>
@@ -177,7 +177,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
                       onUp={() => this.onGroupUp(tagGroup)}
                       onDown={() => this.onGroupDown(tagGroup)}
                       onRemove={() => this.onGroupRemove(tagGroup)}
-                      onChanged={(name) => this.onGroupChanged(tagGroup, name)}
+                      onChanged={(name, conditionTagId) => this.onGroupChanged(tagGroup, name, conditionTagId)}
                     />
                   </div>
                 ))}

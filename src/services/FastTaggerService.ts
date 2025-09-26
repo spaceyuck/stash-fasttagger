@@ -176,6 +176,8 @@ async function migrateEasyTagConfig() {
           id: uuid41(),
           name: easyTagsGroup.title,
           order: easyTagsGroup.order,
+          conditionTagId:
+            easyTagsGroup.conditionId && easyTagsGroup.conditionId != "-1" ? easyTagsGroup.conditionId : undefined,
         };
 
         _addTagGroup(group);
@@ -283,7 +285,7 @@ export async function removeTagGroup(group: FastTaggerGroup) {
   _finalzeTagGroups();
 }
 
-export async function updateTagGroup(group: FastTaggerGroup, name?: string) {
+export async function updateTagGroup(group: FastTaggerGroup, name?: string, conditionTagId?: string) {
   await init();
 
   const idx = groups.findIndex((e) => e.id == group.id);
@@ -292,6 +294,7 @@ export async function updateTagGroup(group: FastTaggerGroup, name?: string) {
   }
 
   groups[idx].name = name;
+  groups[idx].conditionTagId = conditionTagId;
 }
 
 export async function moveTagGroupUp(group: FastTaggerGroup) {
@@ -374,6 +377,12 @@ export async function getTagGroupToTags(): Promise<FastTaggerGroupTags[]> {
   return ret;
 }
 
+export async function getTags(): Promise<Tag[]> {
+  await init();
+
+  return tags;
+}
+
 export async function moveTagToGroup(tag: Tag, group?: FastTaggerGroup) {
   const tagToGroups = tagToGroupsByTagId.get(tag.id);
   if (!tagToGroups) {
@@ -396,6 +405,7 @@ export interface FastTaggerGroup {
   id?: string;
   name?: string;
   order: number;
+  conditionTagId?: string;
 }
 
 export interface FastTaggerTag {

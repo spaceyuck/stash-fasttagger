@@ -40,7 +40,7 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagFormProps, Fas
 
   render() {
     if (!TagLink) {
-      return (<LoadingIndicator/>);
+      return <LoadingIndicator />;
     }
 
     return (
