@@ -678,6 +678,9 @@ interface IPluginApi {
    */
   libraries: {
     ReactRouterDOM: typeof ReactRouterDOM;
+    /**
+     * @see https://react-bootstrap-v4.netlify.app/components/
+     */
     Bootstrap: {
       Button: React.FC<any>;
       ButtonGroup: React.FC<any>;
@@ -703,6 +706,12 @@ interface IPluginApi {
       Nav: React.FC<any> & {
         Link: React.FC<any>;
         Item: React.FC<any>;
+      };
+      Overlay: React.FC<any>;
+      OverlayTrigger: React.FC<any>;
+      Popover: React.FC<any> & {
+        Content: React.FC<any>;
+        Title: React.FC<any>;
       };
       Spinner: React.FC<any>;
       Tabs: React.FC<any>;

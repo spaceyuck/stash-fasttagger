@@ -1,5 +1,16 @@
 @use "sass:math";
 
 .card.fast-tagger-card {
+
     overflow: visible;
+
+    .btn-group {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+
+        .btn {
+            text-wrap: nowrap;
+        }
+    }
 }
