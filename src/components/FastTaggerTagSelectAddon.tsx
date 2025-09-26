@@ -27,6 +27,7 @@ type TagSelectProps = IFilterProps &
     hoverPlacement?: /*Placement*/ any;
     hoverPlacementLabel?: /*Placement*/ any;
     excludeIds?: string[];
+    match: any;
   };
 
 interface FastTaggerTagSelectAddonState {
@@ -48,8 +49,6 @@ class FastTaggerTagSelectAddon extends React.Component<TagSelectProps, FastTagge
   };
 
   render() {
-    //if (loading) return <LoadingIndicator />;
-
     if (
       !this.props.isMulti ||
       this.props.isClearable === false ||
