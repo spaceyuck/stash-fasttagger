@@ -7,6 +7,7 @@ let tagToGroups: FastTaggerTag[] = [];
 let tagToGroupsByTagId: Map<string, FastTaggerTag> = new Map();
 let tags: Tag[] = [];
 let tagsById: Map<string, Tag> = new Map();
+let tagOrderNumbersById: Map<string, number> = new Map();
 
 let initialized = false;
 let initializePromise: Promise<void> | undefined = undefined;
@@ -104,7 +105,11 @@ async function loadTags() {
       }
     }
 
-    saveConfig();
+    tags.sort((left, right) => {
+      const leftValue = (left.sort_name ? left.sort_name : "") + left.name;
+      const rightValue = (right.sort_name ? right.sort_name : "") + right.name;
+      return leftValue.localeCompare(rightValue);
+    });
   });
 }
 
@@ -372,6 +377,14 @@ export async function getTagGroupToTags(): Promise<FastTaggerGroupTags[]> {
       enhancedTag._tagGroupId = tagToGroup.groupId;
       resultEntriesByGroupId.get(tagToGroup.groupId ? tagToGroup.groupId : "_")?.tags.push(enhancedTag);
     }
+  }
+
+  for (const value of resultEntriesByGroupId.values()) {
+    value.tags.sort((left, right) => {
+      const leftValue = (left.sort_name ? left.sort_name : "") + left.name;
+      const rightValue = (right.sort_name ? right.sort_name : "") + right.name;
+      return leftValue.localeCompare(rightValue);
+    });
   }
 
   return ret;

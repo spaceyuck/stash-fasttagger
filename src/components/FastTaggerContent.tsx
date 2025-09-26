@@ -94,17 +94,16 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
   };
 
   renderTagPopover = (tag: Tag) => (
-    <Popover>
-      <Popover.Title as="h3">{tag.name}</Popover.Title>
-      <Popover.Content className="hover-popover-content">
-        <div className="tag-card zoom-0">
+    <Popover className="hover-popover-content">
+      <Popover.Content className="tag-popover-card">
+        <div className="tag-card zoom-0 grid-card card">
           <div className="thumbnail-section">
             <img loading="lazy" className="tag-card-image" alt={tag.name} src={tag.image_path ?? ""} />
           </div>
           <div className="card-section">
             <h5 className="card-section-title flex-aligned">{tag.name}</h5>
+            <div className="tag-description">{tag.description}</div>
           </div>
-          {tag.description}
         </div>
       </Popover.Content>
     </Popover>
@@ -134,15 +133,16 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
               <Card className="card-sm fast-tagger-card">
                 <Card.Header>{groupEntry.group?.name}</Card.Header>
                 <Card.Body>
-                  <ButtonGroup aria-label="Basic example">
+                  <ButtonGroup>
                     {groupEntry.tags.map((tag) => (
                       <OverlayTrigger
                         placement="right"
-                        delay={{ show: 0, hide: 0 }}
+                        delay={{ show: 250, hide: 0 }}
                         overlay={this.renderTagPopover(tag)}
                       >
                         <Button
                           variant="secondary"
+                          size="sm"
                           className={this.isTagSelected(tag.id) ? "btn-success" : ""}
                           onClick={() => this.onTagClick(tag)}
                         >

@@ -4644,7 +4644,8 @@ type Tag = {
   image_path?: Maybe<Scalars["String"]["output"]>;
   /** @deprecated use group_count instead */
   movie_count: Scalars["Int"]["output"];
-  name: Scalars["String"]["output"];
+  name: string;
+  sort_name?: string;
   parent_count: Scalars["Int"]["output"];
   parents: Array<Tag>;
   performer_count: Scalars["Int"]["output"];
