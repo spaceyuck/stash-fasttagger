@@ -75,7 +75,7 @@ async function clearConfig() {
 async function loadTags() {
   tags = [];
   tagsById.clear();
-  return StashService.queryFindTags({
+  return StashService.queryFindTagsForSelect({
     makeFindFilter(): FindFilterType {
       return {
         sort: "name",
