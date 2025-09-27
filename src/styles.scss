@@ -2,6 +2,19 @@
 
 .card.fast-tagger-card {
   overflow: visible;
+  padding: 0;
+
+  .card-header {
+    padding: 0.5em;
+  }
+
+  .card-body {
+    padding: 0.5em;
+  }
+
+  .card-footer {
+    padding: 0.5em;
+  }
 
   .tag-item.badge {
     margin-left: 0;

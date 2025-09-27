@@ -207,7 +207,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
             {this.state.loading && <LoadingIndicator />}
             {!this.state.loading &&
               this.state.tagGroupsToTags?.map((groupEntry) => (
-                <Card className="card-sm fast-tagger-card">
+                <Card className="fast-tagger-card">
                   <Card.Header>{groupEntry.group ? groupEntry.group.name : "Ungrouped tags"}</Card.Header>
                   <Card.Body>
                     <div className="row">

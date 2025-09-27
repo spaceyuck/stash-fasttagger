@@ -136,7 +136,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                 (!groupEntry.group.conditionTagId || this.isTagSelected(groupEntry.group.conditionTagId))
             )
             .map((groupEntry) => (
-              <Card className="card-sm fast-tagger-card">
+              <Card className="fast-tagger-card">
                 <Card.Header>{groupEntry.group?.name}</Card.Header>
                 <Card.Body>
                   <ButtonGroup>

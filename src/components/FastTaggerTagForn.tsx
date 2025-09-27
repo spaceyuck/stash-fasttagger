@@ -55,7 +55,7 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagFormProps, Fas
     }
 
     return (
-      <Card className="card-sm fast-tagger-card">
+      <Card className="fast-tagger-card">
         <Card.Body>
           <div className="d-flex flex-direction-row justify-content-between align-items-center">
             <div className="flex-grow-1 mr-3">

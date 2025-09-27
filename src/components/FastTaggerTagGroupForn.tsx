@@ -92,7 +92,7 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
     }
 
     return (
-      <Card className="card-sm">
+      <Card className="fast-tagger-card">
         <Card.Body>
           <div>
             <input
