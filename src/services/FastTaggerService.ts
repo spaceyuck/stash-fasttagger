@@ -73,6 +73,82 @@ async function clearConfig() {
   initialized = false;
 }
 
+function serializeConfig() {
+  const configData: { groups: { [key: string]: any }[]; tagToGroups: { [key: string]: any }[] } = {
+    groups: [],
+    tagToGroups: [],
+  };
+
+  for (const group of groups) {
+    configData.groups.push({ ...group });
+  }
+
+  for (const tagToGroup of tagToGroups) {
+    const exportedTagGroup: FastTaggerTag & { tag?: { name: string; aliases: string[] } } = { ...tagToGroup };
+    const tag = tagsById.get(tagToGroup.tagId);
+    if (!tag) {
+      continue;
+    }
+    exportedTagGroup.tag = {
+      name: tag.name,
+      aliases: tag.aliases,
+    };
+    configData.tagToGroups.push(exportedTagGroup);
+  }
+
+  return JSON.stringify(configData);
+}
+
+function deserializeConfig(config: string) {
+  const configData = JSON.parse(config);
+
+  if (configData.groups) {
+    for (const groupData of configData.groups) {
+      const group: FastTaggerGroup = {
+        id: groupData.id,
+        name: groupData.name,
+        order: groupData.order,
+        conditionTagId: groupData.conditionTagId,
+      };
+
+      _addTagGroup(group);
+    }
+  }
+
+  if (configData.tagToGroups) {
+    for (var tagToGroupData of configData.tagToGroups) {
+      let tag = tagsById.get(tagToGroupData.id);
+      // tag not matched by id, try to match by name or alias
+      if (!tag && tagToGroupData.tag) {
+        tag = tags.find(
+          (t) =>
+            // imported name matches name or alias
+            (tagToGroupData.tag.name &&
+              (t.name.toLowerCase() == tagToGroupData.tag.name.toLowerCase() ||
+                t.aliases.findIndex((alias) => alias.toLowerCase() == tagToGroupData.tag.name.toLowerCase()) > -1)) ||
+            // imported alias matches name or alias
+            (tagToGroupData.tag.aliases &&
+              tagToGroupData.tag.aliases.findIndex(
+                (importedAlias: string) =>
+                  t.name.toLowerCase() == importedAlias.toLowerCase() ||
+                  t.aliases.findIndex((alias) => importedAlias.toLowerCase() == alias.toLowerCase()) > -1
+              ) > -1)
+        );
+      }
+      // still no matching tag -> skip
+      if (!tag) {
+        continue;
+      }
+      const tagToGroup = tagToGroupsByTagId.get(tag.id);
+      if (!tagToGroup) {
+        continue;
+      }
+      tagToGroup.name = tagToGroupData.name;
+      tagToGroup.groupId = tagToGroupData.groupId;
+    }
+  }
+}
+
 async function loadTags() {
   tags = [];
   tagsById.clear();
@@ -245,6 +321,19 @@ export async function importEasyTag() {
   await clearConfig();
   await init();
   return migrateEasyTagConfig();
+}
+
+export async function exportConfig() {
+  await init();
+
+  return serializeConfig();
+}
+
+export async function importConfig(config: string) {
+  await clearConfig();
+  await init();
+
+  deserializeConfig(config);
 }
 
 export async function getTagGroups(): Promise<FastTaggerGroup[]> {
@@ -428,7 +517,6 @@ export interface FastTaggerTag {
    * override for name
    */
   name?: string;
-  tag?: Tag;
 }
 
 export interface FastTaggerGroupTags {

@@ -133,6 +133,44 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     });
   };
 
+  onExportConfig = () => {
+    this.setState({ saving: true });
+    FastTaggerService.exportConfig().then((config) => {
+      let blob = new Blob([config], { type: "json" });
+      let a = document.createElement("a");
+      a.download = "FastTigger.config.json";
+      a.href = URL.createObjectURL(blob);
+      a.dataset.downloadurl = ["json", a.download, a.href].join(":");
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () {
+        URL.revokeObjectURL(a.href);
+      }, 1500);
+      this.setState({ saving: false });
+    });
+  };
+
+  onImportConfig = () => {
+    var input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = (e) => {
+      this.setState({ saving: true });
+      var file = (e.target as any).files[0];
+      var reader = new FileReader();
+      reader.readAsText(file, "UTF-8");
+      reader.onload = (readerEvent) => {
+        FastTaggerService.importConfig((readerEvent.target as any).result).then(() => {
+          this.setState({ saving: false });
+          this.loadData();
+        });
+      };
+    };
+    input.click();
+  };
+
   onImportEasyTagConfig = () => {
     this.setState({ saving: true });
     FastTaggerService.importEasyTag().then(() => {
@@ -159,6 +197,8 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
         modalProps={{ size: "xl", dialogClassName: "scrape-dialog" }}
         leftFooterButtons={[
           { text: "Clear Config", variant: "danger", onClick: this.onClear },
+          { text: "Download Config", variant: "secondary", onClick: this.onExportConfig },
+          { text: "Upload Config", variant: "secondary", onClick: this.onImportConfig },
           { text: "Import from EasyTag", variant: "secondary", onClick: this.onImportEasyTagConfig },
         ]}
       >
