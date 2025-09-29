@@ -30,3 +30,55 @@
     }
   }
 }
+
+.fast-tagger-content {
+  .fast-tagger-group {
+    display: none;
+
+    &.all {
+      display: block;
+    }
+  }
+}
+
+.scene-tabs {
+  .fast-tagger-group.scene {
+    display: block;
+  }
+}
+
+.image-tabs {
+  .fast-tagger-group.image {
+    display: block;
+  }
+}
+
+#group-page {
+  .fast-tagger-group.group {
+    display: block;
+  }
+}
+
+.gallery-tabs {
+  .fast-tagger-group.gallery {
+    display: block;
+  }
+}
+
+#performer-page {
+  .fast-tagger-group.performer {
+    display: block;
+  }
+}
+
+#studio-page {
+  .fast-tagger-group.studio {
+    display: block;
+  }
+}
+
+#tag-page {
+  .fast-tagger-group.tag {
+    display: block;
+  }
+}

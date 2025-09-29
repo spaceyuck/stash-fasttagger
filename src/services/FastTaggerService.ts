@@ -379,7 +379,12 @@ export async function removeTagGroup(group: FastTaggerGroup) {
   _finalzeTagGroups();
 }
 
-export async function updateTagGroup(group: FastTaggerGroup, name?: string, conditionTagId?: string) {
+export async function updateTagGroup(
+  group: FastTaggerGroup,
+  name?: string,
+  conditionTagId?: string,
+  contexts?: string[]
+) {
   await init();
 
   const idx = groups.findIndex((e) => e.id == group.id);
@@ -389,6 +394,7 @@ export async function updateTagGroup(group: FastTaggerGroup, name?: string, cond
 
   groups[idx].name = name;
   groups[idx].conditionTagId = conditionTagId;
+  groups[idx].contexts = contexts;
 }
 
 export async function moveTagGroupUp(group: FastTaggerGroup) {
@@ -507,6 +513,7 @@ export interface FastTaggerGroup {
   id?: string;
   name?: string;
   order: number;
+  contexts?: string[];
   conditionTagId?: string;
 }
 

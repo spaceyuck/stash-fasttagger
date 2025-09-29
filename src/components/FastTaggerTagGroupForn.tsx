@@ -4,7 +4,19 @@ import { FastTaggerGroup } from "../services/FastTaggerService";
 const PluginApi = window.PluginApi;
 const { React } = window.PluginApi;
 const { Button, ButtonGroup, Card } = PluginApi.libraries.Bootstrap;
-const { faArrowUp, faArrowDown, faTrash } = PluginApi.libraries.FontAwesomeSolid;
+const {
+  faArrowUp,
+  faArrowDown,
+  faCirclePlay,
+  faFilm,
+  faImage,
+  faImages,
+  faLocationDot,
+  faTag,
+  faTrash,
+  faUser,
+  faVideo,
+} = PluginApi.libraries.FontAwesomeSolid;
 const { Icon, LoadingIndicator } = PluginApi.components;
 
 interface FastTaggerTagGroupFormProps {
@@ -12,16 +24,19 @@ interface FastTaggerTagGroupFormProps {
   onUp?: () => void;
   onDown?: () => void;
   onRemove?: () => void;
-  onChanged?: (name?: string, conditionTagId?: string) => void;
+  onChanged?: (name?: string, conditionTagId?: string, contexts?: string[]) => void;
 }
 
 interface FastTaggerTagGroupFormState {
   loading: boolean;
   tags?: Tag[];
   name?: string;
+  contexts?: Set<string>;
   conditionTagId?: string;
   changed: boolean;
 }
+
+const contexts = ["scene", "image", "group", "gallery", "performer", "studio", "tag"];
 
 class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps, FastTaggerTagGroupFormState> {
   constructor(props: FastTaggerTagGroupFormProps) {
@@ -29,6 +44,7 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
     this.state = {
       loading: false,
       name: props.item.name,
+      contexts: props.item.contexts !== undefined ? new Set(props.item.contexts) : new Set(contexts),
       conditionTagId: props.item.conditionTagId,
       changed: false,
     };
@@ -71,6 +87,27 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
     });
   };
 
+  onToggleContext = (context: string) => {
+    this.setState((state) => {
+      const newState = new Set(state.contexts);
+      // already present -> remove
+      if (state.contexts && state.contexts.has(context)) {
+        newState.delete(context);
+      }
+      // not yet present -> add
+      else {
+        newState.add(context);
+      }
+
+      return {
+        contexts: newState,
+        changed: true,
+      };
+    }, () => {
+      this.onFocusLost();
+    });
+  };
+
   onConditionChanged = (tagId?: string) => {
     this.setState({
       conditionTagId: tagId,
@@ -81,7 +118,11 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
   onFocusLost = () => {
     if (this.state.changed) {
       if (this.props.onChanged) {
-        this.props.onChanged(this.state.name, this.state.conditionTagId);
+        this.props.onChanged(
+          this.state.name,
+          this.state.conditionTagId,
+          this.state.contexts ? Array.from(this.state.contexts.values()) : undefined
+        );
       }
     }
   };
@@ -105,6 +146,25 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagGroupFormProps
               className="form-control form-control-sm"
               required
             />
+          </div>
+          <div>
+            <ButtonGroup size="sm">
+              {contexts.map((context) => (
+                <Button
+                  size="sm"
+                  className={this.state.contexts?.has(context) ? "btn-success" : "btn-danger"}
+                  onClick={() => this.onToggleContext(context)}
+                >
+                  {context == "scene" && <Icon icon={faCirclePlay} title="toggle visible when tagging scenes" />}
+                  {context == "image" && <Icon icon={faImage} title="toggle visible when tagging images" />}
+                  {context == "group" && <Icon icon={faFilm} title="toggle visible when tagging groups" />}
+                  {context == "gallery" && <Icon icon={faImages} title="toggle visible when tagging galleries" />}
+                  {context == "performer" && <Icon icon={faUser} title="toggle visible when tagging performers" />}
+                  {context == "studio" && <Icon icon={faVideo} title="toggle visible when tagging studios" />}
+                  {context == "tag" && <Icon icon={faTag} title="toggle visible when tagging tags" />}
+                </Button>
+              ))}
+            </ButtonGroup>
           </div>
           <div>
             <select
