@@ -111,8 +111,8 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     });
   };
 
-  onGroupChanged = (tagGroup: FastTaggerGroup, name?: string, conditionTagId?: string) => {
-    FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId).then(() => {
+  onGroupChanged = (tagGroup: FastTaggerGroup, name?: string, conditionTagId?: string, contexts?: string[]) => {
+    FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, contexts).then(() => {
       this.loadTags();
     });
   };
@@ -237,7 +237,9 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
                       onUp={() => this.onGroupUp(tagGroup)}
                       onDown={() => this.onGroupDown(tagGroup)}
                       onRemove={() => this.onGroupRemove(tagGroup)}
-                      onChanged={(name, conditionTagId) => this.onGroupChanged(tagGroup, name, conditionTagId)}
+                      onChanged={(name, conditionTagId, contexts) =>
+                        this.onGroupChanged(tagGroup, name, conditionTagId, contexts)
+                      }
                     />
                   </div>
                 ))}

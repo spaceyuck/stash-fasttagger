@@ -19,14 +19,14 @@ interface FastTaggerContentState {
   showSettings?: boolean;
   tagGroups?: FastTaggerGroup[];
   tagGroupsToTags?: FastTaggerGroupTags[];
-  excludeIds?: Set<String>, 
+  excludeIds?: Set<String>;
 }
 
 class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTaggerContentState> {
   constructor(props: FastTaggerContentProps) {
     super(props);
     this.state = {
-      excludeIds: props.excludeIds ? new Set(props.excludeIds) : undefined
+      excludeIds: props.excludeIds ? new Set(props.excludeIds) : undefined,
     };
   }
 
@@ -86,7 +86,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
       return false;
     }
   };
-  
+
   onSettingsClick = () => {
     this.setState({ showSettings: true });
   };
@@ -126,7 +126,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     }
 
     return (
-      <>
+      <div className="fast-tagger-content">
         {this.maybeRenderSettingsDialog()}
         {!this.state.loading &&
           this.state.tagGroupsToTags
@@ -136,7 +136,12 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                 (!groupEntry.group.conditionTagId || this.isTagSelected(groupEntry.group.conditionTagId))
             )
             .map((groupEntry) => (
-              <Card className="fast-tagger-card">
+              <Card
+                className={
+                  "fast-tagger-card fast-tagger-group " +
+                  (groupEntry.group?.contexts ? groupEntry.group?.contexts.join(" ") : "all")
+                }
+              >
                 <Card.Header>{groupEntry.group?.name}</Card.Header>
                 <Card.Body>
                   <ButtonGroup>
@@ -149,7 +154,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                         <Button
                           variant="secondary"
                           size="sm"
-                          className={this.isTagSelected(tag.id) ? "btn-success" : ""}
+                          className={"fast-tagger-group-tag" + (this.isTagSelected(tag.id) ? " btn-success" : "")}
                           onClick={() => this.onTagClick(tag)}
                           disabled={this.isTagExcluded(tag.id)}
                         >
@@ -166,7 +171,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
             <Icon icon={faGear} /> Settings
           </Button>
         </div>
-      </>
+      </div>
     );
   }
 }
