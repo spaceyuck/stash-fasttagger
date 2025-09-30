@@ -112,9 +112,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
   };
 
   onGroupChanged = (tagGroup: FastTaggerGroup, name?: string, conditionTagId?: string, contexts?: string[]) => {
-    FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, contexts).then(() => {
-      this.loadTags();
-    });
+    FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, contexts);
   };
 
   onApply = () => {
