@@ -21,4 +21,4 @@ This plugin heavily inspired by the Quick Edit Plugin by [S3L3CT3DLoves](https:/
 
 # Credits
 * [S3L3CT3DLoves](https://github.com/S3L3CT3DLoves) for creating the original [Quick Edit / Easy tag](https://github.com/S3L3CT3DLoves/stashPlugins) Plugin that provided the inspiration for this
-* as a toal React newbie, [Valkyr-JS](https://github.com/Valkyr-JS/StashPluginTemplate) providing a [template](https://github.com/Valkyr-JS/StashPluginTemplate) to get started with a Stash UI plugin was extremely helpful
+* as a toal React newbie, [Valkyr-JS](https://github.com/Valkyr-JS) providing a [template](https://github.com/Valkyr-JS/StashPluginTemplate) to get started with a Stash UI plugin was extremely helpful
