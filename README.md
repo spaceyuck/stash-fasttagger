@@ -39,7 +39,7 @@ Settings dialog, on tab for managing tag groups
 
 Settings dialog, on tab for managing tag to group assignments
 
-![settings tab tags](/doc/screenshots/settings_groups.png?raw=true "Settings dialog, on tab for managing tag to group assignments")
+![settings tab tags](/doc/screenshots/settings_tags.png?raw=true "Settings dialog, on tab for managing tag to group assignments")
 
 
 # Credits
