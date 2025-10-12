@@ -19,6 +19,29 @@ This plugin heavily inspired by the Quick Edit Plugin by [S3L3CT3DLoves](https:/
 * download and upload the current configuration to / from a JSON file, as a convient for of backup (it is not recommended to reuse configuration backup between different Stash servers, since they are specific to the tag IDs of the specific server)
 * a mechanism to import the settings from the [Quick Edit / Easy tag](https://github.com/S3L3CT3DLoves/stashPlugins) plugin by [S3L3CT3DLoves](https://github.com/S3L3CT3DLoves), so if you have already configured a complex structure there, it should be only one click to migrate it over
 
+# Screenshots
+
+## Editor
+
+Initial state of any tag multi-select
+
+![editor closed](/doc/screenshots/editor_closed.png?raw=true "Initial state of any tag multi-select")
+
+tag multi-select with open editor
+
+![editor open](/doc/screenshots/editor_open.png?raw=true "tag multi-select with open editor")
+
+## Settings
+
+Settings dialog, on tab for managing tag groups
+
+![settings tab groups](/doc/screenshots/settings_groups.png?raw=true "Settings dialog, on tab for managing tag groups")
+
+Settings dialog, on tab for managing tag to group assignments
+
+![settings tab tags](/doc/screenshots/settings_groups.png?raw=true "Settings dialog, on tab for managing tag to group assignments")
+
+
 # Credits
 * [S3L3CT3DLoves](https://github.com/S3L3CT3DLoves) for creating the original [Quick Edit / Easy tag](https://github.com/S3L3CT3DLoves/stashPlugins) Plugin that provided the inspiration for this
 * as a toal React newbie, [Valkyr-JS](https://github.com/Valkyr-JS) providing a [template](https://github.com/Valkyr-JS/StashPluginTemplate) to get started with a Stash UI plugin was extremely helpful
