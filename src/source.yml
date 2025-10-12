@@ -1,7 +1,9 @@
 name: Fast Tagger
 description: "Fast tagging without searching for tags"
-version: 1.1.1
+version: 1.1.2
 ui:
+  requires:
+    - CommunityScriptsUILibrary
   javascript:
     - FastTagger.js
   css:
