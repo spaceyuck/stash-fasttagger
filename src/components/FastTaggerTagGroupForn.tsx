@@ -22,12 +22,12 @@ const {
 const { Icon, LoadingIndicator } = PluginApi.components;
 
 let { TagSelect, TagIDSelect } = PluginApi.components;
-if (!TagSelect) {
+if (!TagSelect && PluginApi.loadableComponents.TagSelec) {
   PluginApi.utils.loadComponents([PluginApi.loadableComponents.TagSelect]).then(() => {
     TagSelect = PluginApi.components.TagSelect;
   });
 }
-if (!TagIDSelect) {
+if (!TagIDSelect && PluginApi.loadableComponents.TagIDSelect) {
   PluginApi.utils.loadComponents([PluginApi.loadableComponents.TagIDSelect]).then(() => {
     TagIDSelect = PluginApi.components.TagIDSelect;
   });

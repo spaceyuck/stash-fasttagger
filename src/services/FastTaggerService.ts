@@ -446,15 +446,15 @@ export async function moveTagGroupTo(group: FastTaggerGroup, newOrder: number) {
     return;
   }
 
-  // already at bottom
-  if (idx == groups.length - 1) {
-    return;
-  }
-
-  groups[idx].order = newOrder;
+  const moveUp = newOrder < idx + 1;
+  groups[idx].order = newOrder + (moveUp ? 0 : 1);
 
   // shift every below new target positions down one
-  for (let updateIdx: number = Math.max(newOrder - 1, 0); updateIdx < groups.length; updateIdx++) {
+  for (let updateIdx: number = Math.max(moveUp ? newOrder - 1 : newOrder, 0); updateIdx < groups.length; updateIdx++) {
+    // skip updated entry
+    if (updateIdx == idx) {
+      continue;
+    }
     groups[updateIdx].order += 1;
   }
 
