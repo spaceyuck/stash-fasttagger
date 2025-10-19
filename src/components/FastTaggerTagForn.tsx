@@ -6,9 +6,11 @@ const { Card, Dropdown } = PluginApi.libraries.Bootstrap;
 const { LoadingIndicator } = PluginApi.components;
 
 let { TagLink } = PluginApi.components;
-PluginApi.utils.loadComponents([PluginApi.loadableComponents.TagLink]).then(() => {
-  TagLink = PluginApi.components.TagLink;
-});
+if (!TagLink) {
+  PluginApi.utils.loadComponents([PluginApi.loadableComponents.TagLink]).then(() => {
+    TagLink = PluginApi.components.TagLink;
+  });
+}
 
 interface FastTaggerTagFormProps {
   item: FastTaggerEnhancedTag;
@@ -19,10 +21,10 @@ interface FastTaggerTagFormProps {
 
 interface FastTaggerTagFormState {
   name?: string;
-  changed?: boolean
+  changed?: boolean;
 }
 
-class FastTaggerTagGroupForm extends React.Component<FastTaggerTagFormProps, FastTaggerTagFormState> {
+class FastTaggerTagForm extends React.PureComponent<FastTaggerTagFormProps, FastTaggerTagFormState> {
   constructor(props: FastTaggerTagFormProps) {
     super(props);
     this.state = {
@@ -78,17 +80,25 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagFormProps, Fas
                   Move to
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  {this.props.tagGroups?.map((targetGroupEntry) => {
-                    if (targetGroupEntry.group?.id != this.props.item._tagGroupId) {
+                  {this.props.tagGroups
+                    ?.filter(
+                      (targetGroupEntry) =>
+                        targetGroupEntry.group?.id && targetGroupEntry.group?.id != this.props.item._tagGroupId
+                    )
+                    .map((targetGroupEntry) => {
                       return (
-                        <Dropdown.Item onClick={() => this.onTagMove(targetGroupEntry.group)}>
+                        <Dropdown.Item
+                          key={targetGroupEntry.group?.id}
+                          onClick={() => this.onTagMove(targetGroupEntry.group)}
+                        >
                           {targetGroupEntry.group?.name}
                         </Dropdown.Item>
                       );
-                    }
-                  })}
+                    })}
                   {this.props.tagGroups && this.props.tagGroups.length > 0 && <Dropdown.Divider />}
-                  <Dropdown.Item onClick={() => this.onTagMove(undefined)}>No group</Dropdown.Item>
+                  <Dropdown.Item key="ungrouped" onClick={() => this.onTagMove(undefined)}>
+                    No group
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </div>
@@ -99,4 +109,4 @@ class FastTaggerTagGroupForm extends React.Component<FastTaggerTagFormProps, Fas
   }
 }
 
-export default FastTaggerTagGroupForm;
+export default FastTaggerTagForm;

@@ -36,6 +36,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
 
   static getDerivedStateFromProps(props: FastTaggerContentProps, state: FastTaggerContentState) {
     state.excludeIds = props.excludeIds ? new Set(props.excludeIds) : undefined;
+    return state;
   }
 
   loadData = () => {
@@ -141,12 +142,14 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                   "fast-tagger-card fast-tagger-group " +
                   (groupEntry.group?.contexts ? groupEntry.group?.contexts.join(" ") : "all")
                 }
+                key={groupEntry.group?.id}
               >
                 <Card.Header>{groupEntry.group?.name}</Card.Header>
                 <Card.Body>
                   <ButtonGroup>
                     {groupEntry.tags.map((tag) => (
                       <OverlayTrigger
+                        key={tag.id}
                         placement="right"
                         delay={{ show: 250, hide: 0 }}
                         overlay={this.renderTagPopover(tag)}

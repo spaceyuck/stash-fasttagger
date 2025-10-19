@@ -59,8 +59,9 @@ export const ModalComponent: React.FC<IModal> = ({
     <Modal.Body>{children}</Modal.Body>
     <Modal.Footer className="ModalFooter">
       <div>
-        {leftFooterButtons?.map((leftFooterButton) => (
+        {leftFooterButtons?.map((leftFooterButton, buttonIndex) => (
           <Button
+            key={""+buttonIndex}
             disabled={isRunning}
             variant={leftFooterButton.variant ?? "primary"}
             onClick={leftFooterButton.onClick}

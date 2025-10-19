@@ -108,6 +108,7 @@ function deserializeConfig(config: string) {
         id: groupData.id,
         name: groupData.name,
         order: groupData.order,
+        contexts: groupData.contexts,
         conditionTagId: groupData.conditionTagId,
       };
 
@@ -433,6 +434,29 @@ export async function moveTagGroupDown(group: FastTaggerGroup) {
   const orderBelow = groups[idx + 1].order;
   groups[idx + 1].order = groups[idx].order;
   groups[idx].order = orderBelow;
+
+  _finalzeTagGroups();
+}
+
+export async function moveTagGroupTo(group: FastTaggerGroup, newOrder: number) {
+  await init();
+
+  const idx = groups.findIndex((e) => e.id == group.id);
+  if (idx < 0) {
+    return;
+  }
+
+  // already at bottom
+  if (idx == groups.length - 1) {
+    return;
+  }
+
+  groups[idx].order = newOrder;
+
+  // shift every below new target positions down one
+  for (let updateIdx: number = Math.max(newOrder - 1, 0); updateIdx < groups.length; updateIdx++) {
+    groups[updateIdx].order += 1;
+  }
 
   _finalzeTagGroups();
 }

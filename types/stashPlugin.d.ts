@@ -696,6 +696,10 @@ interface IPluginApi {
         Menu: React.FC<any>;
         Toggle: React.FC<any>;
       };
+      FormControl: React.FC<any>;
+      InputGroup: React.FC<any> & {
+        Prepend: React.FC<any>;
+      };
       Modal: React.FC<any> & {
         Body: React.FC<any>;
         Dialog: React.FC<any>;
@@ -1123,25 +1127,25 @@ interface StashPluginComponents extends Record<string, React.FC<any>> {
   "SceneCard.Image": React.FC<any>;
   "SceneCard.Overlays": React.FC<any>;
   "SceneCard.Popovers": React.FC<any>;
-  SelectSetting?: React.FC<any>;
-  Setting?: React.FC<any>;
-  SettingGroup?: React.FC<any>;
-  SettingModal?: React.FC<any>;
-  StringListSetting?: React.FC<any>;
-  StringSetting?: React.FC<any>;
-  StudioIDSelect?: React.FC<any>;
-  StudioSelect?: React.FC<any>;
-  SweatDrops?: React.FC<any>;
-  TabTitleCounter?: React.FC<any>;
-  TagIDSelect?: React.FC<any>;
-  "TagCard.Details"?: React.FC<any>;
-  "TagCard.Image"?: React.FC<any>;
-  "TagCard.Overlays"?: React.FC<any>;
-  "TagCard.Popovers"?: React.FC<any>;
-  "TagCard.Title"?: React.FC<any>;
-  TagLink?: React.FC<any>;
-  TagSelect?: React.FC<any>;
-  TruncatedText?: React.FC<any>;
+  SelectSetting: React.FC<any>;
+  Setting: React.FC<any>;
+  SettingGroup: React.FC<any>;
+  SettingModal: React.FC<any>;
+  StringListSetting: React.FC<any>;
+  StringSetting: React.FC<any>;
+  StudioIDSelect: React.FC<any>;
+  StudioSelect: React.FC<any>;
+  SweatDrops: React.FC<any>;
+  TabTitleCounter: React.FC<any>;
+  TagIDSelect: React.FC<TagIDSelectProps>;
+  "TagCard.Details": React.FC<any>;
+  "TagCard.Image": React.FC<any>;
+  "TagCard.Overlays": React.FC<any>;
+  "TagCard.Popovers": React.FC<any>;
+  "TagCard.Title": React.FC<any>;
+  TagLink: React.FC<any>;
+  TagSelect: React.FC<TagSelectProps>;
+  TruncatedText: React.FC<any>;
 }
 
 interface PatchableComponents {
@@ -1410,14 +1414,14 @@ declare namespace PluginApi {
     StudioSelect: React.FC<any>;
     SweatDrops: React.FC<any>;
     TabTitleCounter: React.FC<any>;
-    TagIDSelect: React.FC<any>;
+    TagIDSelect: React.FC<TagIDSelectProps>;
     "TagCard.Details": React.FC<any>;
     "TagCard.Image": React.FC<any>;
     "TagCard.Overlays": React.FC<any>;
     "TagCard.Popovers": React.FC<any>;
     "TagCard.Title": React.FC<any>;
     TagLink: React.FC<any>;
-    TagSelect: React.FC<any>;
+    TagSelect: React.FC<TagSelectProps>;
     TruncatedText: React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
@@ -1779,3 +1783,35 @@ export interface ListFilterModel {
   makeFindFilter(): FindFilterType;
   makeFilter(): Record<string, unknown>;
 }
+
+interface IFilterValueProps<T> {
+  ids?: string[];
+  values?: T[];
+  onSelect?: (item: T[]) => void;
+}
+
+interface IFilterProps {
+  noSelectionString?: string;
+  className?: string;
+  active?: boolean;
+  isMulti?: boolean;
+  isClearable?: boolean;
+  isDisabled?: boolean;
+  creatable?: boolean;
+  menuPortalTarget?: HTMLElement | null;
+}
+
+interface IFilterIDProps<T> {
+  ids?: string[];
+  onSelect?: (item: T[]) => void;
+}
+
+type TagSelectProps = IFilterProps &
+  IFilterValueProps<Tag> & {
+    hoverPlacement?: /*Placement*/ any;
+    hoverPlacementLabel?: /*Placement*/ any;
+    excludeIds?: string[];
+    match: any;
+  };
+
+type TagIDSelectProps = IFilterProps & IFilterIDProps<Tag>;

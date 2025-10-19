@@ -1,4 +1,5 @@
 import { ModalComponent } from "./Modal";
+import FastTaggerSettingsContext from "./FastTaggerSettingsContext";
 import FastTaggerTagForm from "./FastTaggerTagForn";
 import FastTaggerTagGroupForm from "./FastTaggerTagGroupForn";
 import * as FastTaggerService from "../services/FastTaggerService";
@@ -16,8 +17,11 @@ interface FastTaggerSettingsDialogProps {
 interface FastTaggerSettingsDialogState {
   loading?: boolean;
   saving?: boolean;
+  tags?: Tag[];
+  tagIdToTag?: Map<string, Tag>;
   tagGroups?: FastTaggerGroup[];
   tagGroupsToTags?: FastTaggerGroupTags[];
+  activeTab: string;
 }
 
 class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogProps, FastTaggerSettingsDialogState> {
@@ -25,6 +29,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     super(props);
     this.state = {
       loading: true,
+      activeTab: "groups",
     };
   }
 
@@ -34,9 +39,10 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
 
   loadData = () => {
     this.setState({ loading: true });
+    const tagsPromise = this.doLoadTags();
     const tagGroupsPromise = this.doLoadGroups();
-    const tagGroupsToTagsPromise = this.doLoadTags();
-    return Promise.all([tagGroupsPromise, tagGroupsToTagsPromise]).then(() => {
+    const tagGroupsToTagsPromise = this.doLoadTagGroupsToTags();
+    return Promise.all([tagsPromise, tagGroupsPromise, tagGroupsToTagsPromise]).then(() => {
       this.setState({ loading: false });
     });
   };
@@ -48,10 +54,21 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     });
   };
 
-  loadTags = async () => {
+  loadTagGroupsToTags = async () => {
     this.setState({ loading: true });
-    return this.doLoadTags().then(() => {
+    return this.doLoadTagGroupsToTags().then(() => {
       this.setState({ loading: false });
+    });
+  };
+
+  doLoadTags = async () => {
+    return FastTaggerService.getTags().then((tags) => {
+      console.debug("done loading tags", tags);
+      const tagIdToTag = new Map<string, Tag>();
+      for (const tag of tags) {
+        tagIdToTag.set(tag.id, tag);
+      }
+      this.setState({ tags: tags, tagIdToTag: tagIdToTag });
     });
   };
 
@@ -62,7 +79,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     });
   };
 
-  doLoadTags = async () => {
+  doLoadTagGroupsToTags = async () => {
     return FastTaggerService.getTagGroupToTags().then((tagGroupsToTags) => {
       console.debug("done loading tag groups to tags", tagGroupsToTags);
       this.setState({ tagGroupsToTags: tagGroupsToTags });
@@ -70,49 +87,86 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
   };
 
   onTagMove = (tag: Tag, group?: FastTaggerGroup) => {
+    this.setState({ saving: true });
     FastTaggerService.moveTagToGroup(tag, group).then(() => {
-      this.loadTags();
+      this.loadTagGroupsToTags().then(() => {
+        this.setState({ saving: false });
+      });
     });
   };
 
   onTagChanged = (tag: Tag, name?: string) => {
-    FastTaggerService.updateTag(tag, name);
+    this.setState({ saving: true });
+    FastTaggerService.updateTag(tag, name).then(() => {
+      this.setState({ saving: false });
+    });
   };
 
   onGroupAdd = () => {
+    this.setState({ saving: true });
     FastTaggerService.addTagGroup({
       order: 99999,
     }).then(() => {
-      this.loadGroups();
+      this.loadGroups().then(() => {
+        this.setState({ saving: false });
+      });
     });
   };
 
   onClear = () => {
+    this.setState({ saving: true });
     FastTaggerService.resetConfig().then(() => {
-      this.loadData();
+      this.loadData().then(() => {
+        this.setState({ saving: false });
+      });
     });
   };
 
   onGroupUp = (tagGroup: FastTaggerGroup) => {
+    this.setState({ saving: true });
     FastTaggerService.moveTagGroupUp(tagGroup).then(() => {
-      this.loadGroups();
+      this.loadGroups().then(() => {
+        this.setState({ saving: false });
+      });
     });
   };
 
   onGroupDown = (tagGroup: FastTaggerGroup) => {
+    this.setState({ saving: true });
     FastTaggerService.moveTagGroupDown(tagGroup).then(() => {
-      this.loadGroups();
+      this.loadGroups().then(() => {
+        this.setState({ saving: false });
+      });
+    });
+  };
+
+  onGroupOrder = (tagGroup: FastTaggerGroup, order: number) => {
+    this.setState({ saving: true });
+    FastTaggerService.moveTagGroupTo(tagGroup, order).then(() => {
+      this.loadGroups().then(() => {
+        this.setState({ saving: false });
+      });
     });
   };
 
   onGroupRemove = (tagGroup: FastTaggerGroup) => {
+    this.setState({ saving: true });
     FastTaggerService.removeTagGroup(tagGroup).then(() => {
-      this.loadGroups();
+      this.loadGroups().then(() => {
+        this.setState({ saving: false });
+      });
     });
   };
 
   onGroupChanged = (tagGroup: FastTaggerGroup, name?: string, conditionTagId?: string, contexts?: string[]) => {
-    FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, contexts);
+    this.setState({ saving: true });
+    FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, contexts).then(() => {
+      this.setState({ saving: false });
+    });
+  };
+
+  onActiveTabChanged = (activeTabKey: string) => {
+    this.setState({ activeTab: activeTabKey });
   };
 
   onApply = () => {
@@ -200,57 +254,60 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
           { text: "Import from EasyTag", variant: "secondary", onClick: this.onImportEasyTagConfig },
         ]}
       >
-        <Tabs defaultActiveKey="groups" justify>
-          <Tab eventKey="tags" title="Tags">
-            {this.state.loading && <LoadingIndicator />}
-            {!this.state.loading &&
-              this.state.tagGroupsToTags?.map((groupEntry) => (
-                <Card className="fast-tagger-card">
-                  <Card.Header>{groupEntry.group ? groupEntry.group.name : "Ungrouped tags"}</Card.Header>
-                  <Card.Body>
-                    <div className="row">
-                      {groupEntry.tags.map((tag) => (
-                        <div className="col-12 col-md-6 col-lg-4">
-                          <FastTaggerTagForm
-                            item={tag}
-                            tagGroups={this.state.tagGroupsToTags}
-                            onMoveTagToGroup={(group) => this.onTagMove(tag, group)}
-                            onChanged={(name) => this.onTagChanged(tag, name)}
-                          />
+        {this.state.loading && <LoadingIndicator />}
+        {!this.state.loading && (
+          <FastTaggerSettingsContext.Provider value={{ tags: this.state.tags, tagIdToTag: this.state.tagIdToTag }}>
+            <Tabs defaultActiveKey="groups" justify activeKey={this.state.activeTab} onSelect={this.onActiveTabChanged}>
+              <Tab eventKey="tags" title="Tags">
+                {this.state.activeTab == "tags" &&
+                  this.state.tagGroupsToTags?.map((groupEntry) => (
+                    <Card className="fast-tagger-card" key={groupEntry.group ? groupEntry.group?.id : "ungrouped"}>
+                      <Card.Header>{groupEntry.group ? groupEntry.group.name : "Ungrouped tags"}</Card.Header>
+                      <Card.Body>
+                        <div className="row">
+                          {groupEntry.tags.map((tag) => (
+                            <div className="col-12 col-md-6 col-lg-4" key={tag.id}>
+                              <FastTaggerTagForm
+                                item={tag}
+                                tagGroups={this.state.tagGroupsToTags}
+                                onMoveTagToGroup={(group) => this.onTagMove(tag, group)}
+                                onChanged={(name) => this.onTagChanged(tag, name)}
+                              />
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </Card.Body>
-                </Card>
-              ))}
-          </Tab>
-          <Tab eventKey="groups" title="Groups">
-            {this.state.loading && <LoadingIndicator />}
-            <div className="row">
-              {!this.state.loading &&
-                this.state.tagGroups?.map((tagGroup) => (
-                  <div className="col-sm-12 col-md-6 col-lg-4">
-                    <FastTaggerTagGroupForm
-                      item={tagGroup}
-                      onUp={() => this.onGroupUp(tagGroup)}
-                      onDown={() => this.onGroupDown(tagGroup)}
-                      onRemove={() => this.onGroupRemove(tagGroup)}
-                      onChanged={(name, conditionTagId, contexts) =>
-                        this.onGroupChanged(tagGroup, name, conditionTagId, contexts)
-                      }
-                    />
-                  </div>
-                ))}
-            </div>
-            {!this.state.loading && (
-              <div>
-                <Button variant="primary" onClick={this.onGroupAdd}>
-                  Add
-                </Button>
-              </div>
-            )}
-          </Tab>
-        </Tabs>
+                      </Card.Body>
+                    </Card>
+                  ))}
+              </Tab>
+              <Tab eventKey="groups" title="Groups">
+                <div className="row">
+                  {this.state.activeTab == "groups" &&
+                    this.state.tagGroups?.map((tagGroup) => (
+                      <div className="col-sm-12 col-md-6 col-lg-4" key={tagGroup.id}>
+                        <FastTaggerTagGroupForm
+                          item={tagGroup}
+                          onUp={() => this.onGroupUp(tagGroup)}
+                          onDown={() => this.onGroupDown(tagGroup)}
+                          onOrder={(order) => this.onGroupOrder(tagGroup, order)}
+                          onRemove={() => this.onGroupRemove(tagGroup)}
+                          onChanged={(name, conditionTagId, contexts) =>
+                            this.onGroupChanged(tagGroup, name, conditionTagId, contexts)
+                          }
+                          disabled={this.state.saving}
+                        />
+                      </div>
+                    ))}
+                </div>
+                <div>
+                  <Button variant="primary" onClick={this.onGroupAdd}>
+                    Add
+                  </Button>
+                </div>
+              </Tab>
+            </Tabs>
+          </FastTaggerSettingsContext.Provider>
+        )}
       </ModalComponent>
     );
   }
