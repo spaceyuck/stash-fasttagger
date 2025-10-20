@@ -17,6 +17,11 @@ interface FastTaggerContentProps {
 interface FastTaggerContentState {
   loading?: boolean;
   showSettings?: boolean;
+  tags?: Tag[];
+  /**
+   * map from tag ID to IDs of direct and indirect parent IDs
+   */
+  tagIdToParentIds?: Map<string, Set<string>>;
   tagGroups?: FastTaggerGroup[];
   tagGroupsToTags?: FastTaggerGroupTags[];
   excludeIds?: Set<String>;
@@ -40,8 +45,13 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
   }
 
   loadData = () => {
-    console.debug("loading tag groups and tag groups to tags...");
+    console.debug("loading tags, tag groups and tag groups to tags...");
     this.setState({ loading: true });
+    const tagsPromise = FastTaggerService.getTags().then((tags) => {
+      console.debug("done loading tags", tags);
+      const tagIdToParentIds = this.buildParentIdMap(tags);
+      this.setState({ tags: tags, tagIdToParentIds: tagIdToParentIds });
+    });
     const tagGroupsPromise = FastTaggerService.getTagGroups().then((tagGroups) => {
       console.debug("done loading tag groups", tagGroups);
       this.setState({ tagGroups: tagGroups });
@@ -50,9 +60,37 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
       console.debug("done loading tag groups to tags", tagGroupsToTags);
       this.setState({ tagGroupsToTags: tagGroupsToTags });
     });
-    return Promise.all([tagGroupsPromise, tagGroupsToTagsPromise]).then(() => {
+    return Promise.all([tagsPromise, tagGroupsPromise, tagGroupsToTagsPromise]).then(() => {
       this.setState({ loading: false });
     });
+  };
+
+  buildParentIdMap = (tags: Tag[]) => {
+    const tagIdToParentIds = new Map<string, Set<string>>();
+    // round one -> populate immediate parent IDs
+    for (const tag of tags) {
+      tagIdToParentIds.set(tag.id, new Set<string>());
+      for (const parent of tag.parents) {
+        tagIdToParentIds.get(tag.id)?.add(parent.id);
+      }
+    }
+
+    for (const tagId of tagIdToParentIds.keys()) {
+      this.populateParentIdMap(tagId, tagIdToParentIds);
+    }
+
+    return tagIdToParentIds;
+  };
+
+  populateParentIdMap = (tagId: string, tagIdToParentIds: Map<string, Set<string>>) => {
+    const parentIds: Set<string> = tagIdToParentIds.get(tagId)!;
+
+    for (const parentId of parentIds) {
+      const indirectParentIds = this.populateParentIdMap(parentId, tagIdToParentIds);
+      indirectParentIds.forEach((indirectParentId) => parentIds.add(indirectParentId));
+    }
+
+    return parentIds;
   };
 
   onTagClick = (tag: Tag) => {
@@ -75,8 +113,13 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     this.props.onSelect?.(ret);
   };
 
-  isTagSelected = (tagId: String): boolean => {
+  isTagSelected = (tagId: string): boolean => {
     const idx = this.props.values?.findIndex((e) => e.id == tagId);
+    return idx !== undefined && idx > -1;
+  };
+
+  isChildTagSelected = (tagId: string): boolean => {
+    const idx = this.props.values?.findIndex((e) => this.state.tagIdToParentIds?.get(e.id)?.has(tagId));
     return idx !== undefined && idx > -1;
   };
 
@@ -134,7 +177,9 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
             ?.filter(
               (groupEntry) =>
                 !!groupEntry.group &&
-                (!groupEntry.group.conditionTagId || this.isTagSelected(groupEntry.group.conditionTagId))
+                (!groupEntry.group.conditionTagId ||
+                  this.isTagSelected(groupEntry.group.conditionTagId) ||
+                  this.isChildTagSelected(groupEntry.group.conditionTagId))
             )
             .map((groupEntry) => (
               <Card
@@ -155,9 +200,15 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                         overlay={this.renderTagPopover(tag)}
                       >
                         <Button
-                          variant="secondary"
                           size="sm"
-                          className={"fast-tagger-group-tag" + (this.isTagSelected(tag.id) ? " btn-success" : "")}
+                          className={
+                            "fast-tagger-group-tag" +
+                            (this.isTagSelected(tag.id)
+                              ? " btn-success"
+                              : this.isChildTagSelected(tag.id)
+                              ? " btn-light"
+                              : " btn-secondary")
+                          }
                           onClick={() => this.onTagClick(tag)}
                           disabled={this.isTagExcluded(tag.id)}
                         >
