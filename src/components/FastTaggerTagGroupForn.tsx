@@ -14,6 +14,7 @@ const {
   faImage,
   faImages,
   faLocationDot,
+  faPencil,
   faTag,
   faTrash,
   faUser,
@@ -44,6 +45,7 @@ interface FastTaggerTagGroupFormProps {
 }
 
 interface FastTaggerTagGroupFormState {
+  edit: boolean;
   name?: string;
   contexts?: Set<string>;
   conditionTagId?: string;
@@ -57,6 +59,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
   constructor(props: FastTaggerTagGroupFormProps) {
     super(props);
     this.state = {
+      edit: false,
       name: props.item.name,
       contexts: props.item.contexts !== undefined ? new Set(props.item.contexts) : new Set(contexts),
       conditionTagId: props.item.conditionTagId,
@@ -73,6 +76,9 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
     };
   };
 
+  onEditClicked = () => {
+    this.setState({ edit: true });
+  };
   onUpClicked = () => {
     if (this.props.onUp) {
       this.props.onUp();
@@ -165,28 +171,32 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
     return (
       <Card className="fast-tagger-card">
         <Card.Body>
-          <div className="mb-1">
-            <input
-              name="name"
-              type="text"
-              value={this.state.name}
-              onChange={(event) => this.onNameChanged(event.target.value)}
-              onBlur={(event) => this.onFocusLost()}
-              disabled={this.props.disabled}
-              placeholder="Name..."
-              className="form-control form-control-sm"
-              required
-            />
-          </div>
-          <div className="mb-1">
-            <ButtonGroup size="sm">
+          {!this.state.edit && (
+            <div className="mb-1">
+              <h5>{this.state.name}</h5>
+            </div>
+          )}
+          {this.state.edit && (
+            <div className="mb-1">
+              <input
+                name="name"
+                type="text"
+                value={this.state.name}
+                onChange={(event) => this.onNameChanged(event.target.value)}
+                onBlur={(event) => this.onFocusLost()}
+                disabled={this.props.disabled}
+                placeholder="Name..."
+                className="form-control form-control-sm text-input"
+                required
+              />
+            </div>
+          )}
+          {!this.state.edit && (
+            <div className="mb-1 d-flex flex-row">
               {contexts.map((groupContext) => (
-                <Button
+                <div
                   key={groupContext}
-                  size="sm"
-                  className={this.state.contexts?.has(groupContext) ? "btn-success" : "btn-danger"}
-                  onClick={() => this.onToggleContext(groupContext)}
-                  disabled={this.props.disabled}
+                  className={"m-0 " + (this.state.contexts?.has(groupContext) ? "text-success" : "text-danger")}
                 >
                   {groupContext == "scene" && <Icon icon={faCirclePlay} title="toggle visible when tagging scenes" />}
                   {groupContext == "image" && <Icon icon={faImage} title="toggle visible when tagging images" />}
@@ -195,55 +205,97 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                   {groupContext == "performer" && <Icon icon={faUser} title="toggle visible when tagging performers" />}
                   {groupContext == "studio" && <Icon icon={faVideo} title="toggle visible when tagging studios" />}
                   {groupContext == "tag" && <Icon icon={faTag} title="toggle visible when tagging tags" />}
-                </Button>
+                </div>
               ))}
-            </ButtonGroup>
-          </div>
-          <div>
-            {/* FIXME this part seems to be the cause of the slowdown */}
-            <PluginApi.components.TagIDSelect
-              isMulti={false}
-              isDisabled={this.props.disabled}
-              ids={this.state.conditionTagId ? [this.state.conditionTagId] : []}
-              onSelect={(selected) => this.onConditionChanged(selected ? selected[0].id : undefined)}
-            ></PluginApi.components.TagIDSelect>
-          </div>
+            </div>
+          )}
+          {this.state.edit && (
+            <div className="mb-1">
+              <ButtonGroup size="sm">
+                {contexts.map((groupContext) => (
+                  <Button
+                    key={groupContext}
+                    size="sm"
+                    className={this.state.contexts?.has(groupContext) ? "btn-success" : "btn-danger"}
+                    onClick={() => this.onToggleContext(groupContext)}
+                    disabled={this.props.disabled}
+                  >
+                    {groupContext == "scene" && <Icon icon={faCirclePlay} title="toggle visible when tagging scenes" />}
+                    {groupContext == "image" && <Icon icon={faImage} title="toggle visible when tagging images" />}
+                    {groupContext == "group" && <Icon icon={faFilm} title="toggle visible when tagging groups" />}
+                    {groupContext == "gallery" && (
+                      <Icon icon={faImages} title="toggle visible when tagging galleries" />
+                    )}
+                    {groupContext == "performer" && (
+                      <Icon icon={faUser} title="toggle visible when tagging performers" />
+                    )}
+                    {groupContext == "studio" && <Icon icon={faVideo} title="toggle visible when tagging studios" />}
+                    {groupContext == "tag" && <Icon icon={faTag} title="toggle visible when tagging tags" />}
+                  </Button>
+                ))}
+              </ButtonGroup>
+            </div>
+          )}
+          {!this.state.edit && <div></div>}
+          {this.state.edit && (
+            <div>
+              {/* FIXME this part seems to be the cause of the slowdown */}
+              <PluginApi.components.TagIDSelect
+                isMulti={false}
+                isDisabled={this.props.disabled}
+                ids={this.state.conditionTagId ? [this.state.conditionTagId] : []}
+                onSelect={(selected) => this.onConditionChanged(selected ? selected[0].id : undefined)}
+              ></PluginApi.components.TagIDSelect>
+            </div>
+          )}
         </Card.Body>
         <Card.Footer>
-          <div className="row">
-            <div className="col-md-6">
-              <InputGroup className="mb-3">
-                <InputGroup.Prepend>
-                  {this.props.onUp && (
-                    <Button size="xs" onClick={this.onUpClicked} disabled={this.props.disabled}>
-                      <Icon icon={faArrowUp} />
-                    </Button>
-                  )}
-                  {this.props.onDown && (
-                    <Button size="xs" onClick={this.onDownClicked} disabled={this.props.disabled}>
-                      <Icon icon={faArrowDown} />
-                    </Button>
-                  )}
-                </InputGroup.Prepend>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={this.state.order}
-                  min="1"
-                  onChange={(event) => this.onOrderChanged(event.target.value)}
-                  disabled={this.props.disabled}
-                />
-              </InputGroup>
-            </div>
-            <div className="col-md-6 text-right">
-              {this.state.changed && <span>*</span>}
-              {this.props.onRemove && (
-                <Button size="xs" variant="danger" onClick={this.onRemoveClicked} disabled={this.props.disabled}>
-                  <Icon icon={faTrash} />
+          {!this.state.edit && (
+            <div className="row">
+              <div className="col-md-6">{this.state.order}</div>
+              <div className="col-md-6 text-right">
+                <Button size="sm" variant="primary" onClick={this.onEditClicked} disabled={this.props.disabled}>
+                  <Icon icon={faPencil} />
                 </Button>
-              )}
+              </div>
             </div>
-          </div>
+          )}
+          {this.state.edit && (
+            <div className="row">
+              <div className="col-md-6">
+                <InputGroup className="mb-3 input-group-sm">
+                  <InputGroup.Prepend>
+                    {this.props.onUp && (
+                      <Button size="sm" onClick={this.onUpClicked} disabled={this.props.disabled}>
+                        <Icon icon={faArrowUp} />
+                      </Button>
+                    )}
+                    {this.props.onDown && (
+                      <Button size="sm" onClick={this.onDownClicked} disabled={this.props.disabled}>
+                        <Icon icon={faArrowDown} />
+                      </Button>
+                    )}
+                  </InputGroup.Prepend>
+                  <input
+                    type="number"
+                    className="form-control form-control-sm  text-input"
+                    value={this.state.order}
+                    min="1"
+                    onChange={(event) => this.onOrderChanged(event.target.value)}
+                    disabled={this.props.disabled}
+                  />
+                </InputGroup>
+              </div>
+              <div className="col-md-6 text-right">
+                {this.state.changed && <span>*</span>}
+                {this.props.onRemove && (
+                  <Button size="sm" variant="danger" onClick={this.onRemoveClicked} disabled={this.props.disabled}>
+                    <Icon icon={faTrash} />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </Card.Footer>
       </Card>
     );

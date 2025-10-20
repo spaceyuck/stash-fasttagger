@@ -67,7 +67,7 @@ class FastTaggerTagForm extends React.PureComponent<FastTaggerTagFormProps, Fast
               <div>
                 <input
                   type="text"
-                  className="form-control form-control-sm"
+                  className="form-control form-control-sm  text-input"
                   value={this.state.name}
                   onChange={(event) => this.onNameChanged(event.target.value)}
                   onBlur={(event) => this.onFocusLost()}
