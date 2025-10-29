@@ -228,34 +228,34 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                   >
                     <option value="">None</option>
                     <option value="primary" className="text-primary">
-                      1
+                      Blue
                     </option>
                     <option value="secondary" className="text-secondary">
-                      2
+                      Secondary
                     </option>
                     <option value="success" className="text-success">
-                      3
-                    </option>
-                    <option value="danger" className="text-danger">
-                      4
+                      Green
                     </option>
                     <option value="warning" className="text-warning">
-                      5
+                      Orange
+                    </option>
+                    <option value="danger" className="text-danger">
+                      Red
                     </option>
                     <option value="info" className="text-info">
-                      6
+                      Turquoise
                     </option>
                     <option value="light" className="text-light">
-                      7
+                      Light
                     </option>
                     <option value="dark" className="text-dark">
-                      8
+                      Dark
                     </option>
                     <option value="white" className="text-white">
-                      9
+                      White
                     </option>
                     <option value="transparent" className="text-transparent">
-                      10
+                      Transparent
                     </option>
                   </select>
                 </InputGroup.Append>

@@ -84,3 +84,15 @@
     display: block;
   }
 }
+
+.tag-link.badge {
+  &.bg-primary,
+  &.bg-success,
+  &.bg-info,
+  &.bg-warning,
+  &.bg-danger,
+  &.bg-transparent,
+  &.bg-dark {
+    color: #fff !important;
+  }
+}

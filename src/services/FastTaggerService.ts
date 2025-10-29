@@ -21,7 +21,7 @@ export async function init() {
 
   initializePromise = new Promise((resolve, reject) => {
     console.debug("initializing fast tagger data");
-    loadConfig().then(() => {
+    initGroups().then(() => {
       loadTags().then(() => {
         initialized = true;
         initializePromise = undefined;
@@ -30,6 +30,27 @@ export async function init() {
     });
   });
   return initializePromise;
+}
+
+let initializedGroups = false;
+let initializeGroupsPromise: Promise<void> | undefined = undefined;
+export async function initGroups() {
+  if (initializedGroups) {
+    return;
+  } else if (initializeGroupsPromise) {
+    return initializeGroupsPromise;
+  }
+
+  initializeGroupsPromise = new Promise((resolve, reject) => {
+    console.debug("initializing fast tagger groups");
+    loadConfig().then(() => {
+      initializedGroups = true;
+      initializeGroupsPromise = undefined;
+      resolve();
+    });
+  });
+
+  return initializeGroupsPromise;
 }
 
 async function loadConfig() {
@@ -517,6 +538,20 @@ export async function getTags(): Promise<Tag[]> {
   await init();
 
   return tags;
+}
+
+export function getTagGroupForTag(tag?: Tag): FastTaggerGroup | undefined {
+  if (!tag) {
+    return;
+  }
+
+  const tagToGroups = tagToGroupsByTagId.get(tag.id);
+  if (!tagToGroups || !tagToGroups.groupId) {
+    return;
+  }
+
+  const group = groupsById.get(tagToGroups.groupId);
+  return group;
 }
 
 export async function moveTagToGroup(tag: Tag, group?: FastTaggerGroup) {
