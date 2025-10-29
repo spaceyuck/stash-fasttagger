@@ -145,10 +145,15 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
   };
 
   onConditionChanged = (tagId?: string) => {
-    this.setState({
-      conditionTagId: tagId,
-      changed: true,
-    });
+    this.setState(
+      {
+        conditionTagId: tagId,
+        changed: true,
+      },
+      () => {
+        this.onFocusLost();
+      }
+    );
   };
 
   onOrderChanged = (order?: string) => {
@@ -184,12 +189,12 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
               () =>
                 this.setState({
                   disabled: false,
-                  changed: false
+                  changed: false,
                 }),
               () =>
                 this.setState({
                   disabled: false,
-                  changed: false
+                  changed: false,
                 })
             );
           }
