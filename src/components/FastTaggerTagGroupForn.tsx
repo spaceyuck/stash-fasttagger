@@ -227,32 +227,47 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                     onChange={(event) => this.onColorClassChanged(event.target.value)}
                   >
                     <option value="">None</option>
-                    <option value="primary" className="text-primary">
+                    <option value="blue" className="text-blue">
                       Blue
                     </option>
-                    <option value="secondary" className="text-secondary">
-                      Secondary
-                    </option>
-                    <option value="success" className="text-success">
+                    <option value="green" className="text-green">
                       Green
                     </option>
-                    <option value="warning" className="text-warning">
-                      Orange
-                    </option>
-                    <option value="danger" className="text-danger">
+                    <option value="red" className="text-red">
                       Red
                     </option>
-                    <option value="info" className="text-info">
-                      Turquoise
+                    <option value="yellow" className="text-yellow">
+                      Yellow
                     </option>
-                    <option value="light" className="text-light">
-                      Light
+                    <option value="orange" className="text-orange">
+                      Orange
                     </option>
-                    <option value="dark" className="text-dark">
-                      Dark
+                    <option value="cyan" className="text-cyan">
+                      Cyan
+                    </option>
+                    <option value="indigo" className="text-indigo">
+                      indigo
+                    </option>
+                    <option value="purple" className="text-purple">
+                      Purple
+                    </option>
+                    <option value="pink" className="text-pink">
+                      Pink
+                    </option>
+                    <option value="teal" className="text-teal">
+                      Teal
                     </option>
                     <option value="white" className="text-white">
                       White
+                    </option>
+                    <option value="gray" className="text-gray">
+                      Gray
+                    </option>
+                    <option value="gray" className="text-gray">
+                      Gray
+                    </option>
+                    <option value="gray-dark" className="text-gray-dark">
+                      Dark Gray
                     </option>
                     <option value="transparent" className="text-transparent">
                       Transparent

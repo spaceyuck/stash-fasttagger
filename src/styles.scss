@@ -85,14 +85,161 @@
   }
 }
 
+.bg-blue {
+  background-color: var(--blue);
+}
+.text-blue {
+  background-color: var(--blue);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-blue) {
+  border: 2px solid var(--blue);
+}
+
+.bg-indigo {
+  background-color: var(--indigo);
+}
+.text-indigo {
+  background-color: var(--indigo);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-indigo) {
+  border: 2px solid var(--indigo);
+}
+
+.bg-purple {
+  background-color: var(--purple);
+}
+.text-purple {
+  background-color: var(--purple);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-purple) {
+  border: 2px solid var(--purple);
+}
+
+.bg-pink {
+  background-color: var(--pink);
+}
+.text-pink {
+  background-color: var(--pink);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-pink) {
+  border: 2px solid var(--pink);
+}
+
+.bg-red {
+  background-color: var(--red);
+}
+.text-red {
+  background-color: var(--red);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-red) {
+  border: 2px solid var(--red);
+}
+
+.bg-orange {
+  background-color: var(--orange);
+}
+.text-orange {
+  background-color: var(--orange);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-orange) {
+  border: 2px solid var(--orange);
+}
+
+.bg-yellow {
+  background-color: var(--yellow);
+}
+.text-yellow {
+  background-color: var(--yellow);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-yellow) {
+  border: 2px solid var(--yellow);
+}
+
+.bg-green {
+  background-color: var(--green);
+}
+.text-green {
+  background-color: var(--green);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-green) {
+  border: 2px solid var(--green);
+}
+
+.bg-teal {
+  background-color: var(--teal);
+}
+.text-teal {
+  background-color: var(--teal);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-teal) {
+  border: 2px solid var(--teal);
+}
+
+.bg-cyan {
+  background-color: var(--cyan);
+}
+.text-cyan {
+  background-color: var(--cyan);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-cyan) {
+  border: 2px solid var(--cyan);
+}
+
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-white) {
+  border: 2px solid var(--white);
+}
+
+.bg-gray {
+  background-color: var(--gray);
+}
+.text-gray {
+  background-color: var(--gray);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-gray) {
+  border: 2px solid var(--gray);
+}
+
+.bg-gray-dark {
+  background-color: var(--gray-dark);
+}
+.text-gray-dark {
+  background-color: var(--gray-dark);
+}
+.tag-card:has(.card-section-title .fasttagger-tag-group-color.fasttagger-tag-group-color-gray-dark) {
+  border: 2px solid var(--gray-dark);
+}
+
 .tag-link.badge {
-  &.bg-primary,
-  &.bg-success,
-  &.bg-info,
-  &.bg-warning,
-  &.bg-danger,
+  &.bg-blue,
+  &.bg-orange,
+  &.bg-red,
+  &.bg-purple,
+  &.bg-pink,
+  &.bg-indigo,
   &.bg-transparent,
-  &.bg-dark {
-    color: #fff !important;
+  &.bg-gray,
+  &.bg-gray-dark {
+    color: var(--white);
+  }
+}
+
+.tag-card {
+  .card-section-title {
+    div.text-dark {
+      background-color: var(--white);
+    }
+  }
+}
+
+.card {
+  &,
+  .card-header,
+  .card-body,
+  .card-footer {
+    &.bg-white,
+    &.bg-yellow,
+    &.bg-teal {
+      color: var(--gray-dark);
+    }
   }
 }

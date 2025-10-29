@@ -65,6 +65,7 @@ async function loadConfig() {
         if (!group.id) {
           continue;
         }
+        group.colorClass = mapColorOldToNew(group.colorClass);
         groupsById.set(group.id, group);
       }
       tagToGroups = JSON.parse(storedConfig["tagToGroups"]);
@@ -131,7 +132,7 @@ function deserializeConfig(config: string) {
         order: groupData.order,
         contexts: groupData.contexts,
         conditionTagId: groupData.conditionTagId,
-        colorClass: groupData.colorClass,
+        colorClass: mapColorOldToNew(groupData.colorClass),
       };
 
       _addTagGroup(group);
@@ -309,6 +310,30 @@ async function migrateEasyTagConfig() {
     }
   });
 }
+
+function mapColorOldToNew(input?: string) : string | undefined {
+    if (input == 'primary') {
+      return 'blue';
+    } else if (input == 'secondary') {
+      return 'gray';
+    } else if (input == 'success') {
+      return 'green';
+    } else if (input == 'warning') {
+      return 'orange';
+    } else if (input == 'danger') {
+      return 'red';
+    } else if (input == 'info') {
+      return 'cyan';
+    } else if (input == 'warning') {
+      return 'orange';
+    } else if (input == 'light') {
+      return 'white';
+    }else if (input == 'light') {
+      return 'white';
+    }
+
+    return input;
+  };
 
 interface EasyTagGroups {
   [name: string]: EasyTagGroup;
