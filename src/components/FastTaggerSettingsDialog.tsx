@@ -268,7 +268,11 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
                 {this.state.activeTab == "tags" &&
                   this.state.tagGroupsToTags?.map((groupEntry) => (
                     <Card className="fast-tagger-card" key={groupEntry.group ? groupEntry.group?.id : "ungrouped"}>
-                      <Card.Header>{groupEntry.group ? groupEntry.group.name : "Ungrouped tags"}</Card.Header>
+                      <Card.Header
+                        className={groupEntry.group?.colorClass ? " bg-" + groupEntry.group?.colorClass : ""}
+                      >
+                        {groupEntry.group ? groupEntry.group.name : "Ungrouped tags"}
+                      </Card.Header>
                       <Card.Body>
                         <div className="row">
                           {groupEntry.tags.map((tag) => (
