@@ -25,3 +25,13 @@ PluginApi.patch.before("TagLink", function (props: any, _: any) {
 
   return [props, _];
 });
+
+PluginApi.patch.after("TagCard.Title", function (props: any, _: any, result: any) {
+  const group = FastTaggerService.getTagGroupForTag(props.tag);
+
+  if (group && group.colorClass) {
+    return (<div className={ "fasttagger-tag-group-color fasttagger-tag-group-color-" + group.colorClass}>{result}</div>);
+  }
+
+  return result;
+});
