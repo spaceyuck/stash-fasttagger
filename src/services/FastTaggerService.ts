@@ -110,6 +110,7 @@ function deserializeConfig(config: string) {
         order: groupData.order,
         contexts: groupData.contexts,
         conditionTagId: groupData.conditionTagId,
+        colorClass: groupData.colorClass,
       };
 
       _addTagGroup(group);
@@ -384,7 +385,8 @@ export async function updateTagGroup(
   group: FastTaggerGroup,
   name?: string,
   conditionTagId?: string,
-  contexts?: string[]
+  contexts?: string[],
+  colorClass?: string
 ) {
   await init();
 
@@ -393,9 +395,11 @@ export async function updateTagGroup(
     return;
   }
 
-  groups[idx].name = name;
-  groups[idx].conditionTagId = conditionTagId;
-  groups[idx].contexts = contexts;
+  const savedGroup = groups[idx];
+  savedGroup.name = name;
+  savedGroup.conditionTagId = conditionTagId;
+  savedGroup.contexts = contexts;
+  savedGroup.colorClass = colorClass;
 }
 
 export async function moveTagGroupUp(group: FastTaggerGroup) {
@@ -537,8 +541,18 @@ export interface FastTaggerGroup {
   id?: string;
   name?: string;
   order: number;
+  /**
+   * indentifiers of contexts to show group in (scene, image, ...)
+   */
   contexts?: string[];
+  /**
+   * ID of tag to condition visibility of group on
+   */
   conditionTagId?: string;
+  /**
+   * optional color class for group
+   */
+  colorClass?: string;
 }
 
 export interface FastTaggerTag {

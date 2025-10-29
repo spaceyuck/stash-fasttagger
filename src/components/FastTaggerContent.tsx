@@ -189,7 +189,9 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                 }
                 key={groupEntry.group?.id}
               >
-                <Card.Header>{groupEntry.group?.name}</Card.Header>
+                <Card.Header className={groupEntry.group?.colorClass ? " bg-" + groupEntry.group?.colorClass : ""}>
+                  {groupEntry.group?.name}
+                </Card.Header>
                 <Card.Body>
                   <ButtonGroup>
                     {groupEntry.tags.map((tag) => (

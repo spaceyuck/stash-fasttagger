@@ -698,6 +698,7 @@ interface IPluginApi {
       };
       FormControl: React.FC<any>;
       InputGroup: React.FC<any> & {
+        Append: React.FC<any>;
         Prepend: React.FC<any>;
       };
       Modal: React.FC<any> & {
