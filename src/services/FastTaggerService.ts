@@ -565,6 +565,14 @@ export async function getTags(): Promise<Tag[]> {
   return tags;
 }
 
+export function getTag(tagId?: string): Tag | undefined {
+  if (!tagId) {
+    return;
+  }
+
+  return tagsById.get(tagId);
+}
+
 export function getTagGroupForTag(tag?: Tag): FastTaggerGroup | undefined {
   if (!tag) {
     return;
