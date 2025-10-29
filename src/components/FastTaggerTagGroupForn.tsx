@@ -145,10 +145,15 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
   };
 
   onConditionChanged = (tagId?: string) => {
-    this.setState({
-      conditionTagId: tagId,
-      changed: true,
-    });
+    this.setState(
+      {
+        conditionTagId: tagId,
+        changed: true,
+      },
+      () => {
+        this.onFocusLost();
+      }
+    );
   };
 
   onOrderChanged = (order?: string) => {
@@ -184,12 +189,12 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
               () =>
                 this.setState({
                   disabled: false,
-                  changed: false
+                  changed: false,
                 }),
               () =>
                 this.setState({
                   disabled: false,
-                  changed: false
+                  changed: false,
                 })
             );
           }
@@ -330,13 +335,17 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
               </ButtonGroup>
             </div>
           )}
-          {!this.state.edit && <div></div>}
+          {!this.state.edit && this.state.conditionTagId && (
+            <div>requires tag {FastTaggerService.getTag(this.state.conditionTagId)?.name}</div>
+          )}
           {this.state.edit && (
             <div>
               {/* FIXME this part seems to be the cause of the slowdown */}
               <PluginApi.components.TagIDSelect
                 isMulti={false}
                 isDisabled={this.props.disabled || this.state.disabled}
+                creatable={false}
+                noSelectionString="Required tag"
                 ids={this.state.conditionTagId ? [this.state.conditionTagId] : []}
                 onSelect={(selected) => this.onConditionChanged(selected ? selected[0].id : undefined)}
               ></PluginApi.components.TagIDSelect>
