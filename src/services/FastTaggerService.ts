@@ -21,7 +21,7 @@ export async function init() {
 
   initializePromise = new Promise((resolve, reject) => {
     console.debug("initializing fast tagger data");
-    loadConfig().then(() => {
+    initGroups().then(() => {
       loadTags().then(() => {
         initialized = true;
         initializePromise = undefined;
@@ -30,6 +30,27 @@ export async function init() {
     });
   });
   return initializePromise;
+}
+
+let initializedGroups = false;
+let initializeGroupsPromise: Promise<void> | undefined = undefined;
+export async function initGroups() {
+  if (initializedGroups) {
+    return;
+  } else if (initializeGroupsPromise) {
+    return initializeGroupsPromise;
+  }
+
+  initializeGroupsPromise = new Promise((resolve, reject) => {
+    console.debug("initializing fast tagger groups");
+    loadConfig().then(() => {
+      initializedGroups = true;
+      initializeGroupsPromise = undefined;
+      resolve();
+    });
+  });
+
+  return initializeGroupsPromise;
 }
 
 async function loadConfig() {
@@ -110,6 +131,7 @@ function deserializeConfig(config: string) {
         order: groupData.order,
         contexts: groupData.contexts,
         conditionTagId: groupData.conditionTagId,
+        colorClass: groupData.colorClass,
       };
 
       _addTagGroup(group);
@@ -384,7 +406,8 @@ export async function updateTagGroup(
   group: FastTaggerGroup,
   name?: string,
   conditionTagId?: string,
-  contexts?: string[]
+  contexts?: string[],
+  colorClass?: string
 ) {
   await init();
 
@@ -393,9 +416,11 @@ export async function updateTagGroup(
     return;
   }
 
-  groups[idx].name = name;
-  groups[idx].conditionTagId = conditionTagId;
-  groups[idx].contexts = contexts;
+  const savedGroup = groups[idx];
+  savedGroup.name = name;
+  savedGroup.conditionTagId = conditionTagId;
+  savedGroup.contexts = contexts;
+  savedGroup.colorClass = colorClass;
 }
 
 export async function moveTagGroupUp(group: FastTaggerGroup) {
@@ -515,6 +540,20 @@ export async function getTags(): Promise<Tag[]> {
   return tags;
 }
 
+export function getTagGroupForTag(tag?: Tag): FastTaggerGroup | undefined {
+  if (!tag) {
+    return;
+  }
+
+  const tagToGroups = tagToGroupsByTagId.get(tag.id);
+  if (!tagToGroups || !tagToGroups.groupId) {
+    return;
+  }
+
+  const group = groupsById.get(tagToGroups.groupId);
+  return group;
+}
+
 export async function moveTagToGroup(tag: Tag, group?: FastTaggerGroup) {
   const tagToGroups = tagToGroupsByTagId.get(tag.id);
   if (!tagToGroups) {
@@ -537,8 +576,18 @@ export interface FastTaggerGroup {
   id?: string;
   name?: string;
   order: number;
+  /**
+   * indentifiers of contexts to show group in (scene, image, ...)
+   */
   contexts?: string[];
+  /**
+   * ID of tag to condition visibility of group on
+   */
   conditionTagId?: string;
+  /**
+   * optional color class for group
+   */
+  colorClass?: string;
 }
 
 export interface FastTaggerTag {

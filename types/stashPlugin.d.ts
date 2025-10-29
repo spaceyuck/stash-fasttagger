@@ -698,6 +698,7 @@ interface IPluginApi {
       };
       FormControl: React.FC<any>;
       InputGroup: React.FC<any> & {
+        Append: React.FC<any>;
         Prepend: React.FC<any>;
       };
       Modal: React.FC<any> & {
@@ -1025,9 +1026,32 @@ interface IPluginApi {
    */
   //patch: PatchableComponents;
   patch: {
-    before: (target: string, fn: Function) => void;
-    instead: (target: string, fn: Function) => void;
-    after: (target: string, fn: Function) => void;
+    /**
+     * Registers a before function.
+     * A before function is called prior to calling a component's render function.
+     * It accepts the same parameters as the component's render function, and is expected to return a list of new arguments that will be passed to the render.
+     * @param component The name of the component to patch.
+     * @param fn The before function. It accepts the same arguments as the component render function and is expected to return a list of arguments to pass to the render function.
+     */
+    before: (component: string, fn: Function) => void;
+    /**
+     * Registers a replacement function for a component. 
+     * The provided function will be called with the arguments passed to the original render function, plus the next render function as the last argument. 
+     * Replacement functions will be called in the order that they are registered. 
+     * If a replacement function does not call the next render function then the following replacement functions will not be called or applied.
+     * @param component The name of the component to patch.
+     * @param fn The replacement function. It accepts the same arguments as the original render function, plus the next render function, and is expected to return the replacement component.
+     */
+    instead: (component: string, fn: Function) => void;
+    /**
+     * Registers an after function. 
+     * An after function is called after the render function of the component. 
+     * It accepts the arguments passed to the original render function, plus the result of the original render function. 
+     * It is expected to return the rendered component.
+     * @param component The name of the component to patch.
+     * @param fn The after function. It accepts the same arguments as the original render function, plus the result of the original render function, and is expected to return the rendered component.
+     */
+    after: (component: string, fn: Function) => void;
   };
   /**
    * This namespace contains methods used to register page routes and components.

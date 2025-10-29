@@ -41,16 +41,18 @@ interface FastTaggerTagGroupFormProps {
   onDown?: () => void;
   onOrder?: (order: number) => void;
   onRemove?: () => void;
-  onChanged?: (name?: string, conditionTagId?: string, contexts?: string[]) => void;
+  onChanged?: (name?: string, conditionTagId?: string, contexts?: string[], colorClass?: string) => Promise<void>;
 }
 
 interface FastTaggerTagGroupFormState {
   edit: boolean;
   name?: string;
+  order?: number;
   contexts?: Set<string>;
   conditionTagId?: string;
-  order?: number;
+  colorClass?: string;
   changed: boolean;
+  disabled: boolean;
 }
 
 const contexts = ["scene", "image", "group", "gallery", "performer", "studio", "tag"];
@@ -61,10 +63,12 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
     this.state = {
       edit: false,
       name: props.item.name,
+      order: props.item.order,
       contexts: props.item.contexts !== undefined ? new Set(props.item.contexts) : new Set(contexts),
       conditionTagId: props.item.conditionTagId,
-      order: props.item.order,
+      colorClass: props.item.colorClass,
       changed: false,
+      disabled: false,
     };
   }
 
@@ -102,6 +106,18 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
       name: text,
       changed: true,
     });
+  };
+
+  onColorClassChanged = (value?: string) => {
+    this.setState(
+      {
+        colorClass: value,
+        changed: true,
+      },
+      () => {
+        this.onFocusLost();
+      }
+    );
   };
 
   onToggleContext = (context: string) => {
@@ -154,10 +170,22 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
   onFocusLost = () => {
     if (this.state.changed) {
       if (this.props.onChanged) {
-        this.props.onChanged(
-          this.state.name,
-          this.state.conditionTagId,
-          this.state.contexts ? Array.from(this.state.contexts.values()) : undefined
+        this.setState(
+          {
+            disabled: true,
+          },
+          () => {
+            this.props.onChanged!(
+              this.state.name,
+              this.state.conditionTagId,
+              this.state.contexts ? Array.from(this.state.contexts.values()) : undefined,
+              this.state.colorClass
+            ).then(() =>
+              this.setState({
+                disabled: true,
+              })
+            );
+          }
         );
       }
     }
@@ -178,17 +206,60 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
           )}
           {this.state.edit && (
             <div className="mb-1">
-              <input
-                name="name"
-                type="text"
-                value={this.state.name}
-                onChange={(event) => this.onNameChanged(event.target.value)}
-                onBlur={(event) => this.onFocusLost()}
-                disabled={this.props.disabled}
-                placeholder="Name..."
-                className="form-control form-control-sm text-input"
-                required
-              />
+              <InputGroup>
+                <input
+                  name="name"
+                  type="text"
+                  value={this.state.name}
+                  onChange={(event) => this.onNameChanged(event.target.value)}
+                  onBlur={(event) => this.onFocusLost()}
+                  disabled={this.props.disabled || this.state.disabled}
+                  placeholder="Name..."
+                  className="form-control form-control-sm text-input"
+                  required
+                />
+                <InputGroup.Append>
+                  <select
+                    className={
+                      "form-control form-control-sm" + (this.state.colorClass ? " bg-" + this.state.colorClass : "")
+                    }
+                    value={this.state.colorClass}
+                    onChange={(event) => this.onColorClassChanged(event.target.value)}
+                  >
+                    <option value="">None</option>
+                    <option value="primary" className="text-primary">
+                      Blue
+                    </option>
+                    <option value="secondary" className="text-secondary">
+                      Secondary
+                    </option>
+                    <option value="success" className="text-success">
+                      Green
+                    </option>
+                    <option value="warning" className="text-warning">
+                      Orange
+                    </option>
+                    <option value="danger" className="text-danger">
+                      Red
+                    </option>
+                    <option value="info" className="text-info">
+                      Turquoise
+                    </option>
+                    <option value="light" className="text-light">
+                      Light
+                    </option>
+                    <option value="dark" className="text-dark">
+                      Dark
+                    </option>
+                    <option value="white" className="text-white">
+                      White
+                    </option>
+                    <option value="transparent" className="text-transparent">
+                      Transparent
+                    </option>
+                  </select>
+                </InputGroup.Append>
+              </InputGroup>
             </div>
           )}
           {!this.state.edit && (
@@ -218,7 +289,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                     size="sm"
                     className={this.state.contexts?.has(groupContext) ? "btn-success" : "btn-danger"}
                     onClick={() => this.onToggleContext(groupContext)}
-                    disabled={this.props.disabled}
+                    disabled={this.props.disabled || this.state.disabled}
                   >
                     {groupContext == "scene" && <Icon icon={faCirclePlay} title="toggle visible when tagging scenes" />}
                     {groupContext == "image" && <Icon icon={faImage} title="toggle visible when tagging images" />}
@@ -242,19 +313,24 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
               {/* FIXME this part seems to be the cause of the slowdown */}
               <PluginApi.components.TagIDSelect
                 isMulti={false}
-                isDisabled={this.props.disabled}
+                isDisabled={this.props.disabled || this.state.disabled}
                 ids={this.state.conditionTagId ? [this.state.conditionTagId] : []}
                 onSelect={(selected) => this.onConditionChanged(selected ? selected[0].id : undefined)}
               ></PluginApi.components.TagIDSelect>
             </div>
           )}
         </Card.Body>
-        <Card.Footer>
+        <Card.Footer className={this.state.colorClass ? " bg-" + this.state.colorClass : ""}>
           {!this.state.edit && (
             <div className="row">
               <div className="col-md-6">{this.state.order}</div>
               <div className="col-md-6 text-right">
-                <Button size="sm" variant="primary" onClick={this.onEditClicked} disabled={this.props.disabled}>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={this.onEditClicked}
+                  disabled={this.props.disabled || this.state.disabled}
+                >
                   <Icon icon={faPencil} />
                 </Button>
               </div>
@@ -266,12 +342,20 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                 <InputGroup className="mb-3 input-group-sm">
                   <InputGroup.Prepend>
                     {this.props.onUp && (
-                      <Button size="sm" onClick={this.onUpClicked} disabled={this.props.disabled}>
+                      <Button
+                        size="sm"
+                        onClick={this.onUpClicked}
+                        disabled={this.props.disabled || this.state.disabled}
+                      >
                         <Icon icon={faArrowUp} />
                       </Button>
                     )}
                     {this.props.onDown && (
-                      <Button size="sm" onClick={this.onDownClicked} disabled={this.props.disabled}>
+                      <Button
+                        size="sm"
+                        onClick={this.onDownClicked}
+                        disabled={this.props.disabled || this.state.disabled}
+                      >
                         <Icon icon={faArrowDown} />
                       </Button>
                     )}
@@ -282,14 +366,19 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                     value={this.state.order}
                     min="1"
                     onChange={(event) => this.onOrderChanged(event.target.value)}
-                    disabled={this.props.disabled}
+                    disabled={this.props.disabled || this.state.disabled}
                   />
                 </InputGroup>
               </div>
               <div className="col-md-6 text-right">
                 {this.state.changed && <span>*</span>}
                 {this.props.onRemove && (
-                  <Button size="sm" variant="danger" onClick={this.onRemoveClicked} disabled={this.props.disabled}>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={this.onRemoveClicked}
+                    disabled={this.props.disabled || this.state.disabled}
+                  >
                     <Icon icon={faTrash} />
                   </Button>
                 )}
