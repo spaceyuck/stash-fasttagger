@@ -180,10 +180,17 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
               this.state.conditionTagId,
               this.state.contexts ? Array.from(this.state.contexts.values()) : undefined,
               this.state.colorClass
-            ).then(() =>
-              this.setState({
-                disabled: true,
-              })
+            ).then(
+              () =>
+                this.setState({
+                  disabled: false,
+                  changed: false
+                }),
+              () =>
+                this.setState({
+                  disabled: false,
+                  changed: false
+                })
             );
           }
         );
@@ -225,6 +232,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                     }
                     value={this.state.colorClass}
                     onChange={(event) => this.onColorClassChanged(event.target.value)}
+                    disabled={this.props.disabled || this.state.disabled}
                   >
                     <option value="">None</option>
                     <option value="blue" className="text-blue">
