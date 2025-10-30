@@ -4,19 +4,20 @@ This plugin heavily inspired by the Quick Edit Plugin by [S3L3CT3DLoves](https:/
 
 # Basic functionality
 * show a small "Open Quick Tag Editor" link under each multi tag select box in the UI
-* tags to select are show grouped, and can be toggled on and of with a signle click
+* tags to select are show grouped, and can be toggled on and of with a single click
 * tags have a hover popup in the spirit of the actual tag hover popup, showing name, desciption and image (it's not identical, since that UI component is not acessible to UI plugins)
 * a "Settings" button a the bottom of the Quick Tag Editor will open a settings popup, where the tags and groups can be configured
 
 # Features
 * create many groups to organize tags
+* groups can be assigned a color, that will be used to highlight that group on all views, as well as tag link items and tag cards (in tag list)
 * groups can be hidden per item type, so that for example a group can be hidden when tagging performers, but shown for scenes and images
-* groups can be conigured to only be shown when a selected tag is already tagged, allowing a setup where one tag group contains the broad topics to be tagged, and only show the more specific tags for each topic if it is selected
+* groups can be conigured to only be shown when a selected tag is already tagged, allowing a setup where one tag group contains the broad topics to be tagged, and only show the more specific tags for each topic if it is selected - also triggered by a tag being implied by a sub-tag being tagged
 * move tags between tag groups, or no tag group (tags can only belong to one group, and tags without a group will not be shown in the Quick Tag Editor)
 * tags are always sorted based on Tag sort name and name, so special topic-dependent non-alphanumeric tag orders can be relized through the sort name
 * tags can have an optional shorter display name, enabling very compact tag buttons within the context of a group, even with many tags in a group
 * configuration is stored within the Stash server itself
-* download and upload the current configuration to / from a JSON file, as a convient for of backup (it is not recommended to reuse configuration backup between different Stash servers, since they are specific to the tag IDs of the specific server)
+* download and upload the current configuration to / from a JSON file, as a convient for of backup (reuse of configuration backups between different Stash servers should be fine, as tags are matched by ID, but the underlying tag list should at least be somewhat consistent)
 * a mechanism to import the settings from the [Quick Edit / Easy tag](https://github.com/S3L3CT3DLoves/stashPlugins) plugin by [S3L3CT3DLoves](https://github.com/S3L3CT3DLoves), so if you have already configured a complex structure there, it should be only one click to migrate it over
 
 # Screenshots
@@ -41,7 +42,16 @@ Settings dialog, on tab for managing tag to group assignments
 
 ![settings tab tags](/doc/screenshots/settings_tags.png?raw=true "Settings dialog, on tab for managing tag to group assignments")
 
+## Tags in regular views
 
-# Credits
+Tags in item detail views, with colors from configured groups
+
+![item tag list](/doc/screenshots/tag_item_list.png?raw=true "Tags in item detail views, with colors from configured groups")
+
+Tag list cards, with colors from configured groups
+
+![tag list](/doc/screenshots/tag_list.png?raw=true "Tag list cards, with colors from configured groups")
+
+# Acknowledgements
 * [S3L3CT3DLoves](https://github.com/S3L3CT3DLoves) for creating the original [Quick Edit / Easy tag](https://github.com/S3L3CT3DLoves/stashPlugins) Plugin that provided the inspiration for this
 * as a toal React newbie, [Valkyr-JS](https://github.com/Valkyr-JS) providing a [template](https://github.com/Valkyr-JS/StashPluginTemplate) to get started with a Stash UI plugin was extremely helpful

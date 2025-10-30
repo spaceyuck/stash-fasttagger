@@ -1,6 +1,6 @@
 name: Fast Tagger
 description: "Fast tagging without searching for tags"
-version: 1.3.3
+version: 1.4.0
 ui:
   requires:
     - CommunityScriptsUILibrary

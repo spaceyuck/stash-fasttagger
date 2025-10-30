@@ -20,7 +20,8 @@ PluginApi.patch.before("TagLink", function (props: any, _: any) {
   const group = FastTaggerService.getTagGroupForTag(props.tag);
 
   if (group && group.colorClass) {
-    props.className = (props.className ? props.className + " ": "") + "bg-" + group.colorClass;
+    const className = (props.className ? props.className + " ": "") + "bg-" + group.colorClass;
+    props = {...props, className: className};
   }
 
   return [props, _];
