@@ -102,20 +102,30 @@ function serializeConfig() {
   };
 
   for (const group of groups) {
-    configData.groups.push({ ...group });
+    const exportedGroup: FastTaggerGroup & { conditionTag?: { name: string; aliases: string[] } } = { ...group };
+    if (group.conditionTagId) {
+      const tag = tagsById.get(group.conditionTagId);
+      if (tag) {
+        exportedGroup.conditionTag = {
+          name: tag.name,
+          aliases: tag.aliases,
+        };
+      }
+    }
+    configData.groups.push(exportedGroup);
   }
 
   for (const tagToGroup of tagToGroups) {
-    const exportedTagGroup: FastTaggerTag & { tag?: { name: string; aliases: string[] } } = { ...tagToGroup };
+    const exportedTagToGroup: FastTaggerTag & { tag?: { name: string; aliases: string[] } } = { ...tagToGroup };
     const tag = tagsById.get(tagToGroup.tagId);
     if (!tag) {
       continue;
     }
-    exportedTagGroup.tag = {
+    exportedTagToGroup.tag = {
       name: tag.name,
       aliases: tag.aliases,
     };
-    configData.tagToGroups.push(exportedTagGroup);
+    configData.tagToGroups.push(exportedTagToGroup);
   }
 
   return JSON.stringify(configData);
@@ -311,29 +321,29 @@ async function migrateEasyTagConfig() {
   });
 }
 
-function mapColorOldToNew(input?: string) : string | undefined {
-    if (input == 'primary') {
-      return 'blue';
-    } else if (input == 'secondary') {
-      return 'gray';
-    } else if (input == 'success') {
-      return 'green';
-    } else if (input == 'warning') {
-      return 'orange';
-    } else if (input == 'danger') {
-      return 'red';
-    } else if (input == 'info') {
-      return 'cyan';
-    } else if (input == 'warning') {
-      return 'orange';
-    } else if (input == 'light') {
-      return 'white';
-    }else if (input == 'light') {
-      return 'white';
-    }
+function mapColorOldToNew(input?: string): string | undefined {
+  if (input == "primary") {
+    return "blue";
+  } else if (input == "secondary") {
+    return "gray";
+  } else if (input == "success") {
+    return "green";
+  } else if (input == "warning") {
+    return "orange";
+  } else if (input == "danger") {
+    return "red";
+  } else if (input == "info") {
+    return "cyan";
+  } else if (input == "warning") {
+    return "orange";
+  } else if (input == "light") {
+    return "white";
+  } else if (input == "light") {
+    return "white";
+  }
 
-    return input;
-  };
+  return input;
+}
 
 interface EasyTagGroups {
   [name: string]: EasyTagGroup;
