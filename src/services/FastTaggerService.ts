@@ -95,8 +95,27 @@ async function clearConfig() {
   initialized = false;
 }
 
+interface SerializedConfig {
+  groups: SerializedConfigGroup[];
+  tagToGroups: SerializedConfigTag[];
+}
+
+type SerializedConfigGroup = FastTaggerGroup & {
+  conditionTag?: {
+    name: string;
+    aliases: string[];
+  };
+};
+
+type SerializedConfigTag = FastTaggerTag & {
+  tag?: {
+    name: string;
+    aliases: string[];
+  };
+};
+
 function serializeConfig() {
-  const configData: { groups: { [key: string]: any }[]; tagToGroups: { [key: string]: any }[] } = {
+  const configData: SerializedConfig = {
     groups: [],
     tagToGroups: [],
   };
@@ -132,7 +151,7 @@ function serializeConfig() {
 }
 
 function deserializeConfig(config: string) {
-  const configData = JSON.parse(config);
+  const configData: SerializedConfig = JSON.parse(config);
 
   if (configData.groups) {
     for (const groupData of configData.groups) {
@@ -141,9 +160,36 @@ function deserializeConfig(config: string) {
         name: groupData.name,
         order: groupData.order,
         contexts: groupData.contexts,
-        conditionTagId: groupData.conditionTagId,
         colorClass: mapColorOldToNew(groupData.colorClass),
       };
+
+      let conditionTag;
+      if (groupData.conditionTag) {
+        conditionTag = findTagByNameOrAlias(groupData.conditionTag.name, groupData.conditionTag.aliases);
+      }
+      // tag not found by name -> look for ID
+      if (!conditionTag && groupData.conditionTagId) {
+        conditionTag = tagsById.get(groupData.conditionTagId);
+      }
+      // tag found
+      if (conditionTag) {
+        console.debug(
+          'FastTagger import matched tag group "' +
+            group.name +
+            '" condition tag ' +
+            groupData.conditionTagId +
+            ' "' +
+            groupData.conditionTag?.name +
+            '" ' +
+            groupData.conditionTag?.aliases +
+            " to " +
+            conditionTag.id +
+            ' "' +
+            conditionTag.name +
+            '"'
+        );
+        group.conditionTagId = conditionTag.id;
+      }
 
       _addTagGroup(group);
     }
@@ -151,25 +197,15 @@ function deserializeConfig(config: string) {
 
   if (configData.tagToGroups) {
     for (var tagToGroupData of configData.tagToGroups) {
-      let tag = tagsById.get(tagToGroupData.id);
-      // tag not matched by id, try to match by name or alias
-      if (!tag && tagToGroupData.tag) {
-        tag = tags.find(
-          (t) =>
-            // imported name matches name or alias
-            (tagToGroupData.tag.name &&
-              (t.name.toLowerCase() == tagToGroupData.tag.name.toLowerCase() ||
-                t.aliases.findIndex((alias) => alias.toLowerCase() == tagToGroupData.tag.name.toLowerCase()) > -1)) ||
-            // imported alias matches name or alias
-            (tagToGroupData.tag.aliases &&
-              tagToGroupData.tag.aliases.findIndex(
-                (importedAlias: string) =>
-                  t.name.toLowerCase() == importedAlias.toLowerCase() ||
-                  t.aliases.findIndex((alias) => importedAlias.toLowerCase() == alias.toLowerCase()) > -1
-              ) > -1)
-        );
+      let tag;
+      if (tagToGroupData.tag) {
+        tag = findTagByNameOrAlias(tagToGroupData.tag.name, tagToGroupData.tag.aliases);
       }
-      // still no matching tag -> skip
+      // tag not found by name -> look for ID
+      if (!tag) {
+        tag = tagsById.get(tagToGroupData.tagId);
+      }
+      // no matching tag -> skip
       if (!tag) {
         continue;
       }
@@ -177,6 +213,19 @@ function deserializeConfig(config: string) {
       if (!tagToGroup) {
         continue;
       }
+      console.debug(
+        'FastTagger import matched tag '+tagToGroupData.tagId+' "' +
+          tagToGroupData.name +
+          '" "' +
+          tagToGroupData.tag?.name +
+          '" ' +
+          tagToGroupData.tag?.aliases +
+          " to " +
+          tag.id +
+          ' "' +
+          tag.name +
+          '"'
+      );
       tagToGroup.name = tagToGroupData.name;
       tagToGroup.groupId = tagToGroupData.groupId;
     }
@@ -581,6 +630,25 @@ export function getTag(tagId?: string): Tag | undefined {
   }
 
   return tagsById.get(tagId);
+}
+
+export function findTagByNameOrAlias(name: string, aliases: string[]): Tag | undefined {
+  const tag = tags.find(
+    (t) =>
+      // imported name matches name or alias
+      (name &&
+        (t.name.toLowerCase() == name.toLowerCase() ||
+          t.aliases.findIndex((alias) => alias.toLowerCase() == name.toLowerCase()) > -1)) ||
+      // imported alias matches name or alias
+      (aliases &&
+        aliases.findIndex(
+          (importedAlias: string) =>
+            t.name.toLowerCase() == importedAlias.toLowerCase() ||
+            t.aliases.findIndex((alias) => importedAlias.toLowerCase() == alias.toLowerCase()) > -1
+        ) > -1)
+  );
+
+  return tag;
 }
 
 export function getTagGroupForTag(tag?: Tag): FastTaggerGroup | undefined {
