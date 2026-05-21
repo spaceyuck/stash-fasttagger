@@ -1,5 +1,6 @@
 const { GQL } = window.PluginApi;
 const { StashService } = window.PluginApi.utils;
+const { Apollo } = window.PluginApi.libraries;
 
 let groups: FastTaggerGroup[] = [];
 let groupsById: Map<string, FastTaggerGroup> = new Map();
@@ -77,6 +78,85 @@ async function loadConfig() {
 }
 
 async function saveConfig() {
+  await saveConfigPugin();
+  return saveConfigCustomFields();
+}
+
+async function saveConfigCustomFields() {
+  for (const group of groups) {
+    // not a group contitional on tag -> not persistable in tag
+    if (!group.conditionTagId) {
+      continue;
+    }
+
+    await StashService.getClient().mutate({
+      mutation: GQL.TagUpdateDocument,
+      variables: {
+        input: {
+          id: group.conditionTagId,
+          custom_fields: { 
+            partial: {
+              "FastTagger_group_label": group.name,
+              "FastTagger_group_order": ''+group.order,
+              "FastTagger_group_conditional": "true",
+              "FastTagger_group_color": group.colorClass,
+              "FastTagger_group_contexts": JSON.stringify(group.contexts)
+            },
+            remove: ["Name", "Value"]
+          }
+        }
+      }
+    });
+  }
+
+  for (const tagToGroup of tagToGroups) {
+    const tag = tagsById.get(tagToGroup.tagId);
+    const hasCustomFields = tag?.custom_fields?.FastTagger_group_label !== undefined
+
+    // is tag assigned to group
+    if (tagToGroup.groupId) {
+      // unchanged and already has custom fields -> no need to save again
+      if (!tagToGroup.modified && hasCustomFields) {
+        continue;
+      }
+
+      await StashService.getClient().mutate({
+        mutation: GQL.TagUpdateDocument,
+        variables: {
+          input: {
+            id: tagToGroup.tagId,
+            custom_fields: { 
+              partial: {
+                "FastTagger_group_label": tagToGroup.name
+              }
+            }
+          }
+        }
+      });
+    } 
+    // not assigned to group but has values -> clear
+    else {
+      // unchanged and has no custom fields -> no need to save again
+      if (!tagToGroup.modified && !hasCustomFields) {
+        continue;
+      }
+
+      await StashService.getClient().mutate({
+        mutation: GQL.TagUpdateDocument,
+        variables: {
+          input: {
+            id: tagToGroup.tagId,
+            custom_fields: {
+              remove: ["FastTagger_group_label"]
+            }
+          }
+        }
+      });
+    }
+  }
+}
+
+async function saveConfigPugin() {
   return window.csLib.setConfiguration("fastTagger", {
     groups: JSON.stringify(groups),
     tagToGroups: JSON.stringify(tagToGroups),
@@ -235,20 +315,46 @@ function deserializeConfig(config: string) {
 async function loadTags() {
   tags = [];
   tagsById.clear();
-  return StashService.queryFindTagsForSelect({
-    makeFindFilter(): FindFilterType {
-      return {
+
+  return StashService.getClient().query({
+    query: window.PluginApi.libraries.Apollo.gql`
+      query FindTagsFastTagger($filter: FindFilterType, $tag_filter: TagFilterType, $ids: [ID!]) {
+        findTags(filter: $filter, tag_filter: $tag_filter, ids: $ids) {
+          count
+          tags {
+            ...FastTaggerTagData
+            __typename
+          }
+          __typename
+        }
+      }
+
+      fragment FastTaggerTagData on Tag {
+        id
+        name
+        sort_name
+        description
+        aliases
+        image_path
+        parents {
+          id
+          __typename
+        }
+        custom_fields
+        __typename
+      }
+    `,
+    variables: {
+      filter: {
         sort: "name",
         page: 1,
         per_page: 99999,
-      };
-    },
-    makeFilter(): Record<string, unknown> {
-      return {};
-    },
+      },
+      tag_filter: {}
+      }
   }).then((result: any) => {
     const tagList: Tag[] = result.data.findTags.tags;
-    const unseenTags = new Map(Object.keys(tagToGroupsByTagId).map((tagId) => [tagId, false]));
+    const unseenTags = new Map(Array.from(tagToGroupsByTagId.keys()).map((tagId) => [tagId, true]));
     for (const tag of tagList) {
       addTag(tag);
 
@@ -259,7 +365,7 @@ async function loadTags() {
 
     // has tags no longer present
     if (unseenTags.size > 0) {
-      for (const removedTagId of Object.keys(unseenTags)) {
+      for (const removedTagId of unseenTags.keys()) {
         removeTag(removedTagId);
       }
     }
@@ -505,6 +611,12 @@ export async function updateTagGroup(
   savedGroup.conditionTagId = conditionTagId;
   savedGroup.contexts = contexts;
   savedGroup.colorClass = colorClass;
+
+  // hide modfied property from stringify
+  if (savedGroup.modified === undefined) {
+    Object.defineProperty(tagToGroups, 'modified', {value: 'static', writable: true});
+  }
+  savedGroup.modified = true;
 }
 
 export async function moveTagGroupUp(group: FastTaggerGroup) {
@@ -681,6 +793,12 @@ export async function updateTag(tag: FastTaggerEnhancedTag, name?: string) {
   }
 
   tagToGroups.name = name;
+   
+  // hide modfied property from stringify
+  if (tagToGroups.modified === undefined) {
+    Object.defineProperty(tagToGroups, 'modified', {value: 'static', writable: true});
+  }
+  tagToGroups.modified = true;
 }
 
 export interface FastTaggerGroup {
@@ -699,6 +817,7 @@ export interface FastTaggerGroup {
    * optional color class for group
    */
   colorClass?: string;
+  modified?: boolean;
 }
 
 export interface FastTaggerTag {
@@ -708,6 +827,7 @@ export interface FastTaggerTag {
    * override for name
    */
   name?: string;
+  modified?: boolean;
 }
 
 export interface FastTaggerGroupTags {
