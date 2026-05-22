@@ -162,11 +162,12 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     tagGroup: FastTaggerGroup,
     name?: string,
     conditionTagId?: string,
+    tagId?: string,
     contexts?: string[],
     colorCloss?: string
   ) => {
     this.setState({ saving: true });
-    return FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, contexts, colorCloss).then(() => {
+    return FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, tagId, contexts, colorCloss).then(() => {
       this.setState({ saving: false });
     });
   };
@@ -301,8 +302,8 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
                           onDown={() => this.onGroupDown(tagGroup)}
                           onOrder={(order) => this.onGroupOrder(tagGroup, order)}
                           onRemove={() => this.onGroupRemove(tagGroup)}
-                          onChanged={(name, conditionTagId, contexts, colorClass) =>
-                            this.onGroupChanged(tagGroup, name, conditionTagId, contexts, colorClass)
+                          onChanged={(name, conditionTagId, tagId, contexts, colorClass) =>
+                            this.onGroupChanged(tagGroup, name, conditionTagId, tagId, contexts, colorClass)
                           }
                           disabled={this.state.saving}
                         />

@@ -5,7 +5,7 @@ import { FastTaggerGroup, FastTaggerGroupTags } from "../services/FastTaggerServ
 const PluginApi = window.PluginApi;
 const { React } = window.PluginApi;
 const { Button, ButtonGroup, Card, Overlay, OverlayTrigger, Popover } = PluginApi.libraries.Bootstrap;
-const { faGear } = PluginApi.libraries.FontAwesomeSolid;
+const { faGear, faTag, faQuestion } = PluginApi.libraries.FontAwesomeSolid;
 const { Icon, LoadingIndicator } = PluginApi.components;
 
 interface FastTaggerContentProps {
@@ -179,7 +179,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                 !!groupEntry.group &&
                 (!groupEntry.group.conditionTagId ||
                   this.isTagSelected(groupEntry.group.conditionTagId) ||
-                  this.isChildTagSelected(groupEntry.group.conditionTagId))
+                  this.isChildTagSelected(groupEntry.group.conditionTagId)),
             )
             .map((groupEntry) => (
               <Card
@@ -190,7 +190,35 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                 key={groupEntry.group?.id}
               >
                 <Card.Header className={groupEntry.group?.colorClass ? " bg-" + groupEntry.group?.colorClass : ""}>
-                  {groupEntry.group?.name}
+                  <div className="d-flex justify-content-between">
+                    <div>{groupEntry.group?.name}</div>
+                    <div>
+                      {groupEntry.conditionTag && (
+                        <OverlayTrigger
+                          key={groupEntry.conditionTag.id}
+                          placement="right"
+                          delay={{ show: 250, hide: 0 }}
+                          overlay={this.renderTagPopover(groupEntry.conditionTag)}
+                        >
+                          <div>
+                            <Icon icon={faQuestion} />
+                          </div>
+                        </OverlayTrigger>
+                      )}
+                      {!groupEntry.conditionTag && groupEntry.tag && (
+                        <OverlayTrigger
+                          key={groupEntry.tag.id}
+                          placement="right"
+                          delay={{ show: 250, hide: 0 }}
+                          overlay={this.renderTagPopover(groupEntry.tag)}
+                        >
+                          <div>
+                            <Icon icon={faTag} />
+                          </div>
+                        </OverlayTrigger>
+                      )}
+                    </div>
+                  </div>
                 </Card.Header>
                 <Card.Body>
                   <ButtonGroup>
@@ -208,8 +236,8 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                             (this.isTagSelected(tag.id)
                               ? " btn-success"
                               : this.isChildTagSelected(tag.id)
-                              ? " btn-light"
-                              : " btn-secondary")
+                                ? " btn-light"
+                                : " btn-secondary")
                           }
                           onClick={() => this.onTagClick(tag)}
                           disabled={this.isTagExcluded(tag.id)}
