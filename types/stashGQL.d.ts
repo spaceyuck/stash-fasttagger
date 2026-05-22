@@ -4629,30 +4629,33 @@ const enum SystemStatusEnum {
 }
 
 type Tag = {
-  __typename?: "Tag";
-  aliases: Array<Scalars["String"]["output"]>;
-  child_count: Scalars["Int"]["output"];
+  __typename?: 'Tag';
+  aliases: Array<Scalars['String']['output']>;
+  child_count: Scalars['Int']['output'];
   children: Array<Tag>;
-  created_at: Scalars["Time"]["output"];
-  description?: Maybe<Scalars["String"]["output"]>;
-  favorite: Scalars["Boolean"]["output"];
-  gallery_count: Scalars["Int"]["output"];
-  group_count: Scalars["Int"]["output"];
-  id: Scalars["ID"]["output"];
-  ignore_auto_tag: Scalars["Boolean"]["output"];
-  image_count: Scalars["Int"]["output"];
-  image_path?: Maybe<Scalars["String"]["output"]>;
+  created_at: Scalars['Time']['output'];
+  custom_fields: Scalars['Map']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  favorite: Scalars['Boolean']['output'];
+  gallery_count: Scalars['Int']['output'];
+  group_count: Scalars['Int']['output'];
+  id: Scalars['ID']['output'];
+  ignore_auto_tag: Scalars['Boolean']['output'];
+  image_count: Scalars['Int']['output'];
+  image_path?: Maybe<Scalars['String']['output']>;
   /** @deprecated use group_count instead */
-  movie_count: Scalars["Int"]["output"];
-  name: string;
-  sort_name?: string;
-  parent_count: Scalars["Int"]["output"];
+  movie_count: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  parent_count: Scalars['Int']['output'];
   parents: Array<Tag>;
-  performer_count: Scalars["Int"]["output"];
-  scene_count: Scalars["Int"]["output"];
-  scene_marker_count: Scalars["Int"]["output"];
-  studio_count: Scalars["Int"]["output"];
-  updated_at: Scalars["Time"]["output"];
+  performer_count: Scalars['Int']['output'];
+  scene_count: Scalars['Int']['output'];
+  scene_marker_count: Scalars['Int']['output'];
+  /** Value that does not appear in the UI but overrides name for sorting */
+  sort_name?: Maybe<Scalars['String']['output']>;
+  stash_ids: Array<StashId>;
+  studio_count: Scalars['Int']['output'];
+  updated_at: Scalars['Time']['output'];
 };
 
 type TagGallery_CountArgs = {

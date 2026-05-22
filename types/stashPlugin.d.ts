@@ -724,7 +724,9 @@ interface IPluginApi {
         Pane: React.FC<any>;
       };
     };
-    Apollo: {};
+    Apollo: {
+      [key: string]: any
+    };
     FontAwesomeRegular: {
       [key: string]: IconDefinition;
     };

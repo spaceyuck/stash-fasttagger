@@ -162,11 +162,12 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     tagGroup: FastTaggerGroup,
     name?: string,
     conditionTagId?: string,
+    tagId?: string,
     contexts?: string[],
     colorCloss?: string
   ) => {
     this.setState({ saving: true });
-    return FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, contexts, colorCloss).then(() => {
+    return FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, tagId, contexts, colorCloss).then(() => {
       this.setState({ saving: false });
     });
   };
@@ -229,9 +230,17 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     input.click();
   };
 
+  onImporCustomFieldsConfig = () => {
+    this.setState({ saving: true });
+    FastTaggerService.importFromCustomFields().then(() => {
+      this.setState({ saving: false });
+      this.loadData();
+    });
+  };
+
   onImportEasyTagConfig = () => {
     this.setState({ saving: true });
-    FastTaggerService.importEasyTag().then(() => {
+    FastTaggerService.importFromEasyTag().then(() => {
       this.setState({ saving: false });
       this.loadData();
     });
@@ -257,6 +266,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
           { text: "Clear Config", variant: "danger", onClick: this.onClear },
           { text: "Download Config", variant: "secondary", onClick: this.onExportConfig },
           { text: "Upload Config", variant: "secondary", onClick: this.onImportConfig },
+          { text: "Import from Tag Custom Fields", variant: "secondary", onClick: this.onImporCustomFieldsConfig },
           { text: "Import from EasyTag", variant: "secondary", onClick: this.onImportEasyTagConfig },
         ]}
       >
@@ -301,8 +311,8 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
                           onDown={() => this.onGroupDown(tagGroup)}
                           onOrder={(order) => this.onGroupOrder(tagGroup, order)}
                           onRemove={() => this.onGroupRemove(tagGroup)}
-                          onChanged={(name, conditionTagId, contexts, colorClass) =>
-                            this.onGroupChanged(tagGroup, name, conditionTagId, contexts, colorClass)
+                          onChanged={(name, conditionTagId, tagId, contexts, colorClass) =>
+                            this.onGroupChanged(tagGroup, name, conditionTagId, tagId, contexts, colorClass)
                           }
                           disabled={this.state.saving}
                         />

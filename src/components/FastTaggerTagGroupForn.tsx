@@ -15,6 +15,7 @@ const {
   faImages,
   faLocationDot,
   faPencil,
+  faQuestion,
   faTag,
   faTrash,
   faUser,
@@ -41,7 +42,7 @@ interface FastTaggerTagGroupFormProps {
   onDown?: () => void;
   onOrder?: (order: number) => void;
   onRemove?: () => void;
-  onChanged?: (name?: string, conditionTagId?: string, contexts?: string[], colorClass?: string) => Promise<void>;
+  onChanged?: (name?: string, conditionTagId?: string, tagId?: string, contexts?: string[], colorClass?: string) => Promise<void>;
 }
 
 interface FastTaggerTagGroupFormState {
@@ -50,6 +51,7 @@ interface FastTaggerTagGroupFormState {
   order?: number;
   contexts?: Set<string>;
   conditionTagId?: string;
+  tagId?: string;
   colorClass?: string;
   changed: boolean;
   disabled: boolean;
@@ -66,6 +68,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
       order: props.item.order,
       contexts: props.item.contexts !== undefined ? new Set(props.item.contexts) : new Set(contexts),
       conditionTagId: props.item.conditionTagId,
+      tagId: props.item.tagId,
       colorClass: props.item.colorClass,
       changed: false,
       disabled: false,
@@ -148,6 +151,20 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
     this.setState(
       {
         conditionTagId: tagId,
+        tagId: tagId,
+        changed: true,
+      },
+      () => {
+        this.onFocusLost();
+      }
+    );
+  };
+
+  onTagChanged = (tagId?: string) => {
+    this.setState(
+      {
+        conditionTagId: undefined,
+        tagId: tagId,
         changed: true,
       },
       () => {
@@ -183,6 +200,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
             this.props.onChanged!(
               this.state.name,
               this.state.conditionTagId,
+              this.state.tagId,
               this.state.contexts ? Array.from(this.state.contexts.values()) : undefined,
               this.state.colorClass
             ).then(
@@ -336,18 +354,36 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
             </div>
           )}
           {!this.state.edit && this.state.conditionTagId && (
-            <div>requires tag {FastTaggerService.getTag(this.state.conditionTagId)?.name}</div>
+            <div>show if tag {FastTaggerService.getTag(this.state.conditionTagId)?.name}</div>
           )}
-          {this.state.edit && (
+          {this.state.edit && (!this.state.tagId || this.state.conditionTagId) && (
             <div>
+              <Icon icon={faQuestion} />
               {/* FIXME this part seems to be the cause of the slowdown */}
               <PluginApi.components.TagIDSelect
                 isMulti={false}
                 isDisabled={this.props.disabled || this.state.disabled}
                 creatable={false}
-                noSelectionString="Required tag"
+                noSelectionString="Tag to trigger visibility"
                 ids={this.state.conditionTagId ? [this.state.conditionTagId] : []}
                 onSelect={(selected) => this.onConditionChanged(selected ? selected[0].id : undefined)}
+              ></PluginApi.components.TagIDSelect>
+            </div>
+          )}
+          {!this.state.edit && !this.state.conditionTagId && this.state.tagId && (
+            <div>linked to tag {FastTaggerService.getTag(this.state.tagId)?.name}</div>
+          )}
+          {this.state.edit && !this.state.conditionTagId && (
+            <div>
+              <Icon icon={faTag} />
+              {/* FIXME this part seems to be the cause of the slowdown */}
+              <PluginApi.components.TagIDSelect
+                isMulti={false}
+                isDisabled={this.props.disabled || this.state.disabled}
+                creatable={false}
+                noSelectionString="Tag to link group to"
+                ids={this.state.tagId ? [this.state.tagId] : []}
+                onSelect={(selected) => this.onTagChanged(selected ? selected[0].id : undefined)}
               ></PluginApi.components.TagIDSelect>
             </div>
           )}
