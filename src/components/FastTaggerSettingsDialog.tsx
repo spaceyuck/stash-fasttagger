@@ -230,9 +230,17 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     input.click();
   };
 
+  onImporCustomFieldsConfig = () => {
+    this.setState({ saving: true });
+    FastTaggerService.importFromCustomFields().then(() => {
+      this.setState({ saving: false });
+      this.loadData();
+    });
+  };
+
   onImportEasyTagConfig = () => {
     this.setState({ saving: true });
-    FastTaggerService.importEasyTag().then(() => {
+    FastTaggerService.importFromEasyTag().then(() => {
       this.setState({ saving: false });
       this.loadData();
     });
@@ -258,6 +266,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
           { text: "Clear Config", variant: "danger", onClick: this.onClear },
           { text: "Download Config", variant: "secondary", onClick: this.onExportConfig },
           { text: "Upload Config", variant: "secondary", onClick: this.onImportConfig },
+          { text: "Import from Tag Custom Fields", variant: "secondary", onClick: this.onImporCustomFieldsConfig },
           { text: "Import from EasyTag", variant: "secondary", onClick: this.onImportEasyTagConfig },
         ]}
       >

@@ -102,7 +102,7 @@ async function saveConfigCustomFields() {
 
   await Promise.all(promises);
 
-  fetchTags({
+  return fetchTags({
     custom_fields: {
       field: "FastTagger_group_label",
       modifier: "NOT_NULL",
@@ -139,6 +139,42 @@ async function saveConfigCustomFields() {
   });
 }
 
+/**
+ * custom fields to be used to save tag group data into {@link Tag}
+ */
+interface CustomFieldConfigGroup {
+  /**
+   * label override for tag, empty string if no override
+   *
+   * also serves as primary marker that {@link Tag} represents a {@link FastTaggerGroup} if set
+   *
+   * @see FastTaggerGroup#name
+   */
+  FastTagger_group_label: string;
+  /**
+   * group UUID
+   */
+  FastTagger_group_id: string;
+  /**
+   * Stringified value of {@link FastTaggerGroup#order}
+   */
+  FastTagger_group_order: string;
+  /**
+   * true if is condition tag, false if uncoditional backing tag
+   * @see FastTaggerGroup#conditionTagId
+   * @see FastTaggerGroup#tagId
+   */
+  FastTagger_group_conditional: "true" | "false";
+  /**
+   * @see FastTaggerGroup#colorClass
+   */
+  FastTagger_group_color: string | undefined;
+  /**
+   * JSON representation of {@link FastTaggerGroup#contexts}
+   */
+  FastTagger_group_contexts: string;
+}
+
 async function saveGroupToCustomFields(group: FastTaggerGroup): Promise<string | undefined> {
   // not a group contitional on tag -> not persistable in tag
   var tagId;
@@ -150,19 +186,22 @@ async function saveGroupToCustomFields(group: FastTaggerGroup): Promise<string |
     tagId = group.tagId;
   }
 
+  const customFieldValues: CustomFieldConfigGroup = {
+    FastTagger_group_label: "" + group.name,
+    FastTagger_group_id: group.id!,
+    FastTagger_group_order: "" + group.order,
+    FastTagger_group_conditional: group.conditionTagId ? "true" : "false",
+    FastTagger_group_color: group.colorClass,
+    FastTagger_group_contexts: JSON.stringify(group.contexts),
+  };
+
   await StashService.getClient().mutate({
     mutation: GQL.TagUpdateDocument,
     variables: {
       input: {
         id: tagId,
         custom_fields: {
-          partial: {
-            FastTagger_group_label: group.name,
-            FastTagger_group_order: "" + group.order,
-            FastTagger_group_conditional: group.conditionTagId ? "true" : "false",
-            FastTagger_group_color: group.colorClass,
-            FastTagger_group_contexts: JSON.stringify(group.contexts),
-          },
+          partial: customFieldValues,
           remove: [],
         },
       },
@@ -170,6 +209,44 @@ async function saveGroupToCustomFields(group: FastTaggerGroup): Promise<string |
   });
 
   return tagId;
+}
+
+/**
+ * custom fields to be used to save tag data into {@link Tag}
+ */
+interface CustomFieldConfigTag {
+  /**
+   * label override for tag, empty string if no override
+   *
+   * also serves as primary marker that {@link Tag} represents a {@link FastTaggerTag} if set
+   *
+   * @see FastTaggerTag#name
+   */
+  FastTagger_tag_label: string;
+  /**
+   * JSON representation of information about group
+   * @see CustomFieldConfigTagGroupValue
+   */
+  FastTagger_tag_group: string;
+}
+
+interface CustomFieldConfigTagGroupValue {
+  /**
+   * name of group
+   */
+  name: string;
+  /**
+   * UUID  of group
+   */
+  id: string;
+  /**
+   * ID of backing tag, if any
+   */
+  tagId?: string;
+  /**
+   * name of backing tag, if any
+   */
+  tagName?: string;
 }
 
 async function saveTagToCustomFields(tagToGroup: FastTaggerTag): Promise<string> {
@@ -182,28 +259,31 @@ async function saveTagToCustomFields(tagToGroup: FastTaggerTag): Promise<string>
     if (tagToGroup.modified || !hasCustomFields) {
       const group = groupsById.get(tagToGroup.groupId);
       const groupTag = group && group.tagId ? tagsById.get(group.tagId) : undefined;
-      await StashService.getClient().mutate({
-        mutation: GQL.TagUpdateDocument,
-        variables: {
-          input: {
-            id: tagToGroup.tagId,
-            custom_fields: {
-              partial: {
-                FastTagger_tag_label: tagToGroup.name ? tagToGroup.name : "",
-                FastTagger_tag_group: group
-                  ? JSON.stringify({
-                      name: group.name,
-                      id: group.id,
-                      tagId: group.tagId,
-                      tagName: groupTag?.name,
-                    })
-                  : undefined,
+      if (group) {
+        const groupValue: CustomFieldConfigTagGroupValue = {
+          name: group.name!,
+          id: group.id!,
+          tagId: group?.tagId,
+          tagName: groupTag?.name,
+        };
+        const customFieldValues: CustomFieldConfigTag = {
+          FastTagger_tag_label: tagToGroup.name ? tagToGroup.name : "",
+          FastTagger_tag_group: JSON.stringify(groupValue),
+        };
+
+        await StashService.getClient().mutate({
+          mutation: GQL.TagUpdateDocument,
+          variables: {
+            input: {
+              id: tagToGroup.tagId,
+              custom_fields: {
+                partial: customFieldValues,
+                remove: [],
               },
-              remove: [],
             },
           },
-        },
-      });
+        });
+      }
     }
   }
   // not assigned to group but has values -> clear
@@ -237,7 +317,10 @@ async function saveConfigPugin() {
 async function clearConfig() {
   await clearConfigPlugin();
   await clearConfigCustomFields();
+  clearState();
+}
 
+function clearState() {
   groups = [];
   groupsById.clear();
   tagToGroups = [];
@@ -589,6 +672,81 @@ const uuid41 = () => {
   return `${d.substr(0, 8)}-${d.substr(8, 4)}-4${d.substr(13, 3)}-${vr}${d.substr(17, 3)}-${d.substr(20, 12)}`;
 };
 
+async function importCustomFieldConfig() {
+  if (groups.length > 0) {
+    return;
+  }
+
+  // load groups from custom fields
+  await fetchTags({
+    custom_fields: {
+      field: "FastTagger_group_label",
+      modifier: "NOT_NULL",
+    },
+  }).then((tagsWithGroupData) => {
+    for (const tag of tagsWithGroupData) {
+      const customFieldValues: CustomFieldConfigGroup = tag.custom_fields;
+
+      const group: FastTaggerGroup = {
+        id: customFieldValues.FastTagger_group_id,
+        name: customFieldValues.FastTagger_group_label,
+        order: parseInt(customFieldValues.FastTagger_group_order),
+        contexts: JSON.parse(customFieldValues.FastTagger_group_contexts),
+        conditionTagId: customFieldValues.FastTagger_group_conditional == "true" ? tag.id : undefined,
+        tagId: customFieldValues.FastTagger_group_conditional == "false" ? tag.id : undefined,
+        colorClass: customFieldValues.FastTagger_group_color,
+      };
+
+      _addTagGroup(group);
+    }
+  });
+
+  // load tags from custom fields
+  await fetchTags({
+    custom_fields: {
+      field: "FastTagger_tag_label",
+      modifier: "NOT_NULL",
+    },
+    OR: {
+      custom_fields: {
+        field: "FastTagger_tag_label",
+        modifier: "EQUALS",
+        value: "",
+      },
+    },
+  }).then((tagsWithGroupData) => {
+    for (const tag of tagsWithGroupData) {
+      const customFieldValues: CustomFieldConfigTag = tag.custom_fields;
+
+      const tagToGroup = tagToGroupsByTagId.get(tag.id);
+      if (tagToGroup) {
+        tagToGroup.name = customFieldValues.FastTagger_tag_label;
+
+        const groupData: CustomFieldConfigTagGroupValue = JSON.parse(customFieldValues.FastTagger_tag_group);
+
+        let group = groupsById.get(groupData.id);
+        // group does not exists yet, probably unbacked or backed by removed tag -> create
+        if (!group) {
+          const matchingTag = groupData.tagName ? findTagByNameOrAlias(groupData.tagName, []) : undefined;
+          group = {
+            id: groupData.id,
+            name: groupData.name,
+            order: 9999,
+            tagId: matchingTag ? matchingTag.id : undefined,
+          };
+
+          _addTagGroup(group);
+        }
+        if (group) {
+          tagToGroup.groupId = group.id;
+        }
+      }
+    }
+  });
+
+  _finalzeTagGroups();
+}
+
 async function migrateEasyTagConfig() {
   if (groups.length > 0) {
     return;
@@ -608,7 +766,6 @@ async function migrateEasyTagConfig() {
           order: easyTagsGroup.order,
           conditionTagId:
             easyTagsGroup.conditionId && easyTagsGroup.conditionId != "-1" ? easyTagsGroup.conditionId : undefined,
-          tagId: easyTagsGroup.conditionId && easyTagsGroup.conditionId != "-1" ? easyTagsGroup.conditionId : undefined,
         };
 
         _addTagGroup(group);
@@ -691,10 +848,17 @@ export async function resetConfig() {
   return clearConfig();
 }
 
-export async function importEasyTag() {
+export async function importFromEasyTag() {
   await clearConfig();
   await init();
   return migrateEasyTagConfig();
+}
+
+export async function importFromCustomFields() {
+  await clearConfigPlugin();
+  clearState();
+  await init();
+  return importCustomFieldConfig();
 }
 
 export async function exportConfig() {
@@ -967,8 +1131,17 @@ export async function updateTag(tag: FastTaggerEnhancedTag, name?: string) {
 }
 
 export interface FastTaggerGroup {
+  /**
+   * UUID of group
+   */
   id?: string;
+  /**
+   * label of group
+   */
   name?: string;
+  /**
+   * order number, should be unique
+   */
   order: number;
   /**
    * indentifiers of contexts to show group in (scene, image, ...)
@@ -993,7 +1166,7 @@ export interface FastTaggerTag {
   tagId: string;
   groupId?: string;
   /**
-   * override for name
+   * optional override for name, if empty, tag name is used
    */
   name?: string;
   modified?: boolean;
