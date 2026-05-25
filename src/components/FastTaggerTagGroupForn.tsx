@@ -20,10 +20,11 @@ const {
   faTrash,
   faUser,
   faVideo,
+  faXmark,
 } = PluginApi.libraries.FontAwesomeSolid;
 const { Icon, LoadingIndicator } = PluginApi.components;
 
-let { TagSelect, TagIDSelect } = PluginApi.components;
+let { TagSelect, TagIDSelect, TagLink } = PluginApi.components;
 if (!TagSelect && PluginApi.loadableComponents.TagSelec) {
   PluginApi.utils.loadComponents([PluginApi.loadableComponents.TagSelect]).then(() => {
     TagSelect = PluginApi.components.TagSelect;
@@ -34,6 +35,11 @@ if (!TagIDSelect && PluginApi.loadableComponents.TagIDSelect) {
     TagIDSelect = PluginApi.components.TagIDSelect;
   });
 }
+if (!TagLink) {
+  PluginApi.utils.loadComponents([PluginApi.loadableComponents.TagLink]).then(() => {
+    TagLink = PluginApi.components.TagLink;
+  });
+}
 
 interface FastTaggerTagGroupFormProps {
   item: FastTaggerGroup;
@@ -42,7 +48,13 @@ interface FastTaggerTagGroupFormProps {
   onDown?: () => void;
   onOrder?: (order: number) => void;
   onRemove?: () => void;
-  onChanged?: (name?: string, conditionTagId?: string, tagId?: string, contexts?: string[], colorClass?: string) => Promise<void>;
+  onChanged?: (
+    name?: string,
+    conditionTagId?: string,
+    tagId?: string,
+    contexts?: string[],
+    colorClass?: string,
+  ) => Promise<void>;
 }
 
 interface FastTaggerTagGroupFormState {
@@ -119,7 +131,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
       },
       () => {
         this.onFocusLost();
-      }
+      },
     );
   };
 
@@ -143,7 +155,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
       },
       () => {
         this.onFocusLost();
-      }
+      },
     );
   };
 
@@ -156,7 +168,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
       },
       () => {
         this.onFocusLost();
-      }
+      },
     );
   };
 
@@ -169,7 +181,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
       },
       () => {
         this.onFocusLost();
-      }
+      },
     );
   };
 
@@ -202,7 +214,7 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
               this.state.conditionTagId,
               this.state.tagId,
               this.state.contexts ? Array.from(this.state.contexts.values()) : undefined,
-              this.state.colorClass
+              this.state.colorClass,
             ).then(
               () =>
                 this.setState({
@@ -213,9 +225,9 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                 this.setState({
                   disabled: false,
                   changed: false,
-                })
+                }),
             );
-          }
+          },
         );
       }
     }
@@ -354,37 +366,77 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
             </div>
           )}
           {!this.state.edit && this.state.conditionTagId && (
-            <div>show if tag {FastTaggerService.getTag(this.state.conditionTagId)?.name}</div>
+            <div className="d-flex align-items-center">
+              <div title="Show only if tagged with this tag">
+                <Icon icon={faQuestion} />
+              </div>
+              <TagLink tag={FastTaggerService.getTag(this.state.conditionTagId)} linkType="details"></TagLink>
+            </div>
           )}
           {this.state.edit && (!this.state.tagId || this.state.conditionTagId) && (
-            <div>
-              <Icon icon={faQuestion} />
+            <div className="d-flex align-items-center">
+              <div title="Show only if tagged with this tag">
+                <Icon icon={faQuestion} />
+              </div>
               {/* FIXME this part seems to be the cause of the slowdown */}
               <PluginApi.components.TagIDSelect
+                className="flex-grow-1 align-self-stretch"
                 isMulti={false}
                 isDisabled={this.props.disabled || this.state.disabled}
+                isClearable={false}
                 creatable={false}
-                noSelectionString="Tag to trigger visibility"
+                noSelectionString="Show only if tagged with..."
                 ids={this.state.conditionTagId ? [this.state.conditionTagId] : []}
                 onSelect={(selected) => this.onConditionChanged(selected ? selected[0].id : undefined)}
               ></PluginApi.components.TagIDSelect>
+              {this.state.conditionTagId && (
+                <Button
+                  className="align-self-stretch"
+                  size="sm"
+                  variant="danger"
+                  onClick={() => this.onConditionChanged(undefined)}
+                  disabled={this.props.disabled || this.state.disabled}
+                >
+                  <Icon icon={faXmark} />
+                </Button>
+              )}
             </div>
           )}
           {!this.state.edit && !this.state.conditionTagId && this.state.tagId && (
-            <div>linked to tag {FastTaggerService.getTag(this.state.tagId)?.name}</div>
+            <div className="d-flex align-items-center">
+              <div title="Stored in this tag">
+                <Icon icon={faTag} />
+              </div>
+              <TagLink tag={FastTaggerService.getTag(this.state.tagId)} linkType="details"></TagLink>
+            </div>
           )}
           {this.state.edit && !this.state.conditionTagId && (
-            <div>
-              <Icon icon={faTag} />
+            <div className="d-flex align-items-center">
+              <div title="Stored in this tag">
+                <Icon icon={faTag} />
+              </div>
               {/* FIXME this part seems to be the cause of the slowdown */}
               <PluginApi.components.TagIDSelect
+                className="flex-grow-1"
                 isMulti={false}
                 isDisabled={this.props.disabled || this.state.disabled}
+                isClearable={false}
                 creatable={false}
-                noSelectionString="Tag to link group to"
+                noSelectionString="Store group in tag..."
                 ids={this.state.tagId ? [this.state.tagId] : []}
                 onSelect={(selected) => this.onTagChanged(selected ? selected[0].id : undefined)}
               ></PluginApi.components.TagIDSelect>
+              {this.state.tagId && (
+                <Button
+                  className="align-self-stretch"
+                  size="sm"
+                  variant="danger"
+                  onClick={() => this.onTagChanged(undefined)}
+                  disabled={this.props.disabled || this.state.disabled}
+                >
+                  <Icon icon={faXmark} />
+                </Button>
+              )}
             </div>
           )}
         </Card.Body>
