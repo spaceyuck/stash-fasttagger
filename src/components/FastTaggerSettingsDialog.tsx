@@ -164,7 +164,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     conditionTagId?: string,
     tagId?: string,
     contexts?: string[],
-    colorCloss?: string
+    colorCloss?: string,
   ) => {
     this.setState({ saving: true });
     return FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, tagId, contexts, colorCloss).then(() => {
@@ -247,6 +247,20 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
   };
 
   render() {
+    const footerButtons = [
+      { text: "Clear Config", variant: "danger", onClick: this.onClear },
+      { text: "Download Config", variant: "secondary", onClick: this.onExportConfig },
+      { text: "Upload Config", variant: "secondary", onClick: this.onImportConfig },
+    ];
+    if (FastTaggerService.hasCustomFieldSupport()) {
+      footerButtons.push({
+        text: "Import from Tag Custom Fields",
+        variant: "secondary",
+        onClick: this.onImporCustomFieldsConfig,
+      });
+    }
+    footerButtons.push({ text: "Import from EasyTag", variant: "secondary", onClick: this.onImportEasyTagConfig });
+
     return (
       <ModalComponent
         show
@@ -262,13 +276,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
           variant: "secondary",
         }}
         modalProps={{ size: "xl", dialogClassName: "scrape-dialog" }}
-        leftFooterButtons={[
-          { text: "Clear Config", variant: "danger", onClick: this.onClear },
-          { text: "Download Config", variant: "secondary", onClick: this.onExportConfig },
-          { text: "Upload Config", variant: "secondary", onClick: this.onImportConfig },
-          { text: "Import from Tag Custom Fields", variant: "secondary", onClick: this.onImporCustomFieldsConfig },
-          { text: "Import from EasyTag", variant: "secondary", onClick: this.onImportEasyTagConfig },
-        ]}
+        leftFooterButtons={footerButtons}
       >
         {this.state.loading && <LoadingIndicator />}
         {!this.state.loading && (

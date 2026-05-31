@@ -12,6 +12,7 @@ let tagOrderNumbersById: Map<string, number> = new Map();
 
 let initialized = false;
 let initializePromise: Promise<void> | undefined = undefined;
+let customFieldsSupported = true;
 
 export async function init() {
   if (initialized) {
@@ -83,6 +84,10 @@ async function saveConfig() {
 }
 
 async function saveConfigCustomFields() {
+  if (!customFieldsSupported) {
+    return;
+  }
+  
   const savedGroupTagIds: Set<string> = new Set([]);
 
   const promises = [];
@@ -176,6 +181,10 @@ interface CustomFieldConfigGroup {
 }
 
 async function saveGroupToCustomFields(group: FastTaggerGroup): Promise<string | undefined> {
+  if (!customFieldsSupported) {
+    throw "custom fields are not supported";
+  }
+  
   // not a group contitional on tag -> not persistable in tag
   var tagId;
   if (!group.conditionTagId && !group.tagId) {
@@ -250,6 +259,10 @@ interface CustomFieldConfigTagGroupValue {
 }
 
 async function saveTagToCustomFields(tagToGroup: FastTaggerTag): Promise<string> {
+  if (!customFieldsSupported) {
+    throw "custom fields are not supported";
+  }
+
   const tag = tagsById.get(tagToGroup.tagId);
   const hasCustomFields = tag?.custom_fields?.FastTagger_tag_label !== undefined;
 
@@ -578,35 +591,39 @@ async function loadTags() {
 }
 
 async function fetchTags(filter: any): Promise<Tag[]> {
-  return StashService.getClient()
-    .query({
-      query: window.PluginApi.libraries.Apollo.gql`
-      query FindTagsFastTagger($filter: FindFilterType, $tag_filter: TagFilterType, $ids: [ID!]) {
-        findTags(filter: $filter, tag_filter: $tag_filter, ids: $ids) {
-          count
-          tags {
-            ...FastTaggerTagData
-            __typename
-          }
+  /**
+   * custom query since StashService.queryFindTagsForSelect() does not pull custom fields, and StashService.queryFindTags() pulls counts too, which are slow and unneccessary
+   */
+  const queryWithCustomFields = window.PluginApi.libraries.Apollo.gql`
+    query FindTagsFastTagger($filter: FindFilterType, $tag_filter: TagFilterType, $ids: [ID!]) {
+      findTags(filter: $filter, tag_filter: $tag_filter, ids: $ids) {
+        count
+        tags {
+          ...FastTaggerTagData
           __typename
         }
-      }
-
-      fragment FastTaggerTagData on Tag {
-        id
-        name
-        sort_name
-        description
-        aliases
-        image_path
-        parents {
-          id
-          __typename
-        }
-        custom_fields
         __typename
       }
-    `,
+    }
+
+    fragment FastTaggerTagData on Tag {
+      id
+      name
+      sort_name
+      description
+      aliases
+      image_path
+      parents {
+        id
+        __typename
+      }
+      custom_fields
+      __typename
+    }
+  `;
+  return StashService.getClient()
+    .query({
+      query: queryWithCustomFields,
       variables: {
         filter: {
           sort: "name",
@@ -616,9 +633,29 @@ async function fetchTags(filter: any): Promise<Tag[]> {
         tag_filter: filter,
       },
     })
-    .then((result: any) => {
-      return result.data.findTags.tags;
-    });
+    .then(
+      (result: any) => {
+        return result.data.findTags.tags;
+      },
+      (result: any) => {
+        //failed (probably custom_fields unknown)
+        customFieldsSupported = false;
+        return StashService.queryFindTagsForSelect({
+          makeFindFilter(): FindFilterType {
+            return {
+              sort: "name",
+              page: 1,
+              per_page: 99999,
+            };
+          },
+          makeFilter(): Record<string, unknown> {
+            return {};
+          },
+        }).then((result: any) => {
+          return result.data.findTags.tags;
+        });
+      },
+    );
 }
 
 function addTag(tag: Tag) {
@@ -855,6 +892,10 @@ export async function importFromEasyTag() {
 }
 
 export async function importFromCustomFields() {
+  if (!customFieldsSupported) {
+    return;
+  }
+  
   await clearConfigPlugin();
   clearState();
   await init();
@@ -1128,6 +1169,10 @@ export async function updateTag(tag: FastTaggerEnhancedTag, name?: string) {
     Object.defineProperty(tagToGroups, "modified", { value: "static", writable: true });
   }
   tagToGroups.modified = true;
+}
+
+export function hasCustomFieldSupport() {
+  return customFieldsSupported;
 }
 
 export interface FastTaggerGroup {
