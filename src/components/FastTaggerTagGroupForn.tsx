@@ -385,23 +385,12 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                 className="flex-grow-1 align-self-stretch"
                 isMulti={false}
                 isDisabled={this.props.disabled || this.state.disabled}
-                isClearable={false}
+                isClearable={true}
                 creatable={false}
                 noSelectionString="Show only if tagged with..."
                 ids={this.state.conditionTagId ? [this.state.conditionTagId] : []}
-                onSelect={(selected) => this.onConditionChanged(selected ? selected[0].id : undefined)}
+                onSelect={(selected) => this.onConditionChanged(selected && selected.length > 0 ? selected[0].id : undefined)}
               ></PluginApi.components.TagIDSelect>
-              {this.state.conditionTagId && (
-                <Button
-                  className="align-self-stretch"
-                  size="sm"
-                  variant="danger"
-                  onClick={() => this.onConditionChanged(undefined)}
-                  disabled={this.props.disabled || this.state.disabled}
-                >
-                  <Icon icon={faXmark} />
-                </Button>
-              )}
             </div>
           )}
           {!this.state.edit && !this.state.conditionTagId && this.state.tagId && (
@@ -424,23 +413,12 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
                 className="flex-grow-1"
                 isMulti={false}
                 isDisabled={this.props.disabled || this.state.disabled}
-                isClearable={false}
+                isClearable={true}
                 creatable={false}
                 noSelectionString="Store group in tag..."
                 ids={this.state.tagId ? [this.state.tagId] : []}
-                onSelect={(selected) => this.onTagChanged(selected ? selected[0].id : undefined)}
+                onSelect={(selected) => this.onTagChanged(selected && selected.length > 0 ? selected[0].id : undefined)}
               ></PluginApi.components.TagIDSelect>
-              {this.state.tagId && (
-                <Button
-                  className="align-self-stretch"
-                  size="sm"
-                  variant="danger"
-                  onClick={() => this.onTagChanged(undefined)}
-                  disabled={this.props.disabled || this.state.disabled}
-                >
-                  <Icon icon={faXmark} />
-                </Button>
-              )}
             </div>
           )}
         </Card.Body>
