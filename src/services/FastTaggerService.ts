@@ -87,7 +87,7 @@ async function saveConfigCustomFields() {
   if (!customFieldsSupported) {
     return;
   }
-  
+
   const savedGroupTagIds: Set<string> = new Set([]);
 
   const promises = [];
@@ -184,7 +184,7 @@ async function saveGroupToCustomFields(group: FastTaggerGroup): Promise<string |
   if (!customFieldsSupported) {
     throw "custom fields are not supported";
   }
-  
+
   // not a group contitional on tag -> not persistable in tag
   var tagId;
   if (!group.conditionTagId && !group.tagId) {
@@ -587,6 +587,17 @@ async function loadTags() {
       const rightValue = (right.sort_name ? right.sort_name : "") + right.name;
       return leftValue.localeCompare(rightValue);
     });
+
+    for (const group of groups) {
+      // condition tag points to now unknown tag ID -> treat as unset
+      if (group.conditionTagId && !tagsById.get(group.conditionTagId)) {
+        group.conditionTagId = undefined;
+      }
+      // backing tag points to now unknown tag ID -> treat as unset
+      if (group.tagId && !tagsById.get(group.tagId)) {
+        group.tagId = undefined;
+      }
+    }
   });
 }
 
@@ -895,7 +906,7 @@ export async function importFromCustomFields() {
   if (!customFieldsSupported) {
     return;
   }
-  
+
   await clearConfigPlugin();
   clearState();
   await init();
