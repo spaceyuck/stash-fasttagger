@@ -370,7 +370,9 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
               <div title="Show only if tagged with this tag">
                 <Icon icon={faQuestion} />
               </div>
-              <TagLink tag={FastTaggerService.getTag(this.state.conditionTagId)} linkType="details"></TagLink>
+              {FastTaggerService.getTag(this.state.conditionTagId) != undefined && (
+                <TagLink tag={FastTaggerService.getTag(this.state.conditionTagId)} linkType="details"></TagLink>
+              )}
             </div>
           )}
           {this.state.edit && (!this.state.tagId || this.state.conditionTagId) && (
@@ -407,7 +409,9 @@ class FastTaggerTagGroupForm extends React.PureComponent<FastTaggerTagGroupFormP
               <div title="Stored in this tag">
                 <Icon icon={faTag} />
               </div>
-              <TagLink tag={FastTaggerService.getTag(this.state.tagId)} linkType="details"></TagLink>
+              {FastTaggerService.getTag(this.state.tagId) != undefined && (
+                <TagLink tag={FastTaggerService.getTag(this.state.tagId)} linkType="details"></TagLink>
+              )}
             </div>
           )}
           {this.state.edit && !this.state.conditionTagId && (
