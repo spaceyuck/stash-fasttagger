@@ -60,7 +60,7 @@ class FastTaggerTagSelectAddon extends React.Component<TagSelectProps, FastTagge
 
     return (
       <>
-        <div className="d-flex flex-row justify-content-center">
+        <div className="fast-tagger-tag-select-addon-toggle">
           <div>
             <a href="javascript:void(0)" className="plugin-fast-tagger-toggle" onClick={this.onToggleClick}>
               {!this.state.isOpen && <Icon icon={faChevronDown}></Icon>}

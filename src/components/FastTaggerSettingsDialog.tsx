@@ -1,13 +1,11 @@
 import { ModalComponent } from "./Modal";
-import FastTaggerSettingsContext from "./FastTaggerSettingsContext";
-import FastTaggerTagForm from "./FastTaggerTagForn";
-import FastTaggerTagGroupForm from "./FastTaggerTagGroupForn";
+import FastTaggerTagGroupListItemForm from "./FastTaggerTagGroupListItemForm";
 import * as FastTaggerService from "../services/FastTaggerService";
 import { FastTaggerGroup, FastTaggerGroupTags } from "../services/FastTaggerService";
 
 const PluginApi = window.PluginApi;
 const { React } = PluginApi;
-const { Button, Card, Tabs, Tab } = PluginApi.libraries.Bootstrap;
+const { Button } = PluginApi.libraries.Bootstrap;
 const { LoadingIndicator } = PluginApi.components;
 
 interface FastTaggerSettingsDialogProps {
@@ -17,6 +15,7 @@ interface FastTaggerSettingsDialogProps {
 interface FastTaggerSettingsDialogState {
   loading?: boolean;
   saving?: boolean;
+  hidden?: boolean;
   tags?: Tag[];
   tagIdToTag?: Map<string, Tag>;
   tagGroups?: FastTaggerGroup[];
@@ -105,8 +104,9 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
   onGroupAdd = () => {
     this.setState({ saving: true });
     FastTaggerService.addTagGroup({
+      name: "New Group",
       order: 99999,
-    }).then(() => {
+    }).then((group) => {
       this.loadGroups().then(() => {
         this.setState({ saving: false });
       });
@@ -158,18 +158,18 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
     });
   };
 
-  onGroupChanged = (
-    tagGroup: FastTaggerGroup,
-    name?: string,
-    conditionTagId?: string,
-    tagId?: string,
-    contexts?: string[],
-    colorCloss?: string,
-  ) => {
-    this.setState({ saving: true });
-    return FastTaggerService.updateTagGroup(tagGroup, name, conditionTagId, tagId, contexts, colorCloss).then(() => {
-      this.setState({ saving: false });
-    });
+  onGroupEditOpen = (tagGroup: FastTaggerGroup) => {
+    this.setState({ hidden: true });
+  };
+
+  onGroupEditClose = (tagGroup: FastTaggerGroup, accept?: boolean) => {
+    if (accept) {
+      this.loadGroups().then(() => {
+        this.setState({ hidden: false });
+      });
+    } else {
+      this.setState({ hidden: false });
+    }
   };
 
   onActiveTabChanged = (activeTabKey: string) => {
@@ -265,6 +265,7 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
       <ModalComponent
         show
         isRunning={this.state.loading || this.state.saving}
+        disabled={this.state.hidden}
         header="Settings"
         accept={{
           onClick: this.onApply,
@@ -280,61 +281,29 @@ class FastTaggerSettingsDialog extends React.Component<FastTaggerSettingsDialogP
       >
         {this.state.loading && <LoadingIndicator />}
         {!this.state.loading && (
-          <FastTaggerSettingsContext.Provider value={{ tags: this.state.tags, tagIdToTag: this.state.tagIdToTag }}>
-            <Tabs defaultActiveKey="groups" justify activeKey={this.state.activeTab} onSelect={this.onActiveTabChanged}>
-              <Tab eventKey="tags" title="Tags">
-                {this.state.activeTab == "tags" &&
-                  this.state.tagGroupsToTags?.map((groupEntry) => (
-                    <Card className="fast-tagger-card" key={groupEntry.group ? groupEntry.group?.id : "ungrouped"}>
-                      <Card.Header
-                        className={groupEntry.group?.colorClass ? " bg-" + groupEntry.group?.colorClass : ""}
-                      >
-                        {groupEntry.group ? groupEntry.group.name : "Ungrouped tags"}
-                      </Card.Header>
-                      <Card.Body>
-                        <div className="row">
-                          {groupEntry.tags.map((tag) => (
-                            <div className="col-12 col-md-6 col-lg-4" key={tag.id}>
-                              <FastTaggerTagForm
-                                item={tag}
-                                tagGroups={this.state.tagGroupsToTags}
-                                onMoveTagToGroup={(group) => this.onTagMove(tag, group)}
-                                onChanged={(name) => this.onTagChanged(tag, name)}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  ))}
-              </Tab>
-              <Tab eventKey="groups" title="Groups">
-                <div className="row">
-                  {this.state.activeTab == "groups" &&
-                    this.state.tagGroups?.map((tagGroup) => (
-                      <div className="col-sm-12 col-md-6 col-lg-4" key={tagGroup.id}>
-                        <FastTaggerTagGroupForm
-                          item={tagGroup}
-                          onUp={() => this.onGroupUp(tagGroup)}
-                          onDown={() => this.onGroupDown(tagGroup)}
-                          onOrder={(order) => this.onGroupOrder(tagGroup, order)}
-                          onRemove={() => this.onGroupRemove(tagGroup)}
-                          onChanged={(name, conditionTagId, tagId, contexts, colorClass) =>
-                            this.onGroupChanged(tagGroup, name, conditionTagId, tagId, contexts, colorClass)
-                          }
-                          disabled={this.state.saving}
-                        />
-                      </div>
-                    ))}
+          <>
+            <div className="row">
+              {this.state.tagGroups?.map((tagGroup) => (
+                <div className="col-sm-12 col-md-6 col-lg-4" key={tagGroup.id}>
+                  <FastTaggerTagGroupListItemForm
+                    item={tagGroup}
+                    onUp={() => this.onGroupUp(tagGroup)}
+                    onDown={() => this.onGroupDown(tagGroup)}
+                    onOrder={(order) => this.onGroupOrder(tagGroup, order)}
+                    onRemove={() => this.onGroupRemove(tagGroup)}
+                    onEditOpen={() => this.onGroupEditOpen(tagGroup)}
+                    onEditClose={(accept) => this.onGroupEditClose(tagGroup, accept)}
+                    disabled={this.state.saving || this.state.hidden}
+                  />
                 </div>
-                <div>
-                  <Button variant="primary" onClick={this.onGroupAdd}>
-                    Add
-                  </Button>
-                </div>
-              </Tab>
-            </Tabs>
-          </FastTaggerSettingsContext.Provider>
+              ))}
+            </div>
+            <div>
+              <Button variant="primary" onClick={this.onGroupAdd} disabled={this.state.saving || this.state.hidden}>
+                Add
+              </Button>
+            </div>
+          </>
         )}
       </ModalComponent>
     );

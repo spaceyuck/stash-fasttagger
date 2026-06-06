@@ -2,8 +2,9 @@ import { FastTaggerEnhancedTag, FastTaggerGroup, FastTaggerGroupTags } from "../
 
 const PluginApi = window.PluginApi;
 const { React } = window.PluginApi;
-const { Card, Dropdown } = PluginApi.libraries.Bootstrap;
-const { LoadingIndicator } = PluginApi.components;
+const { Card, Button } = PluginApi.libraries.Bootstrap;
+const { faTrash } = PluginApi.libraries.FontAwesomeSolid;
+const { Icon, LoadingIndicator } = PluginApi.components;
 
 let { TagLink } = PluginApi.components;
 if (!TagLink) {
@@ -14,8 +15,13 @@ if (!TagLink) {
 
 interface FastTaggerTagFormProps {
   item: FastTaggerEnhancedTag;
-  tagGroups?: FastTaggerGroupTags[];
-  onMoveTagToGroup: (group?: FastTaggerGroup) => void;
+  /**
+   * called when tag should be removed from containing group, empty means unremovable
+   */
+  onRemove?: () => void;
+  /**
+   * called when tag override data changed
+   */
   onChanged?: (name?: string) => void;
 }
 
@@ -47,8 +53,10 @@ class FastTaggerTagForm extends React.PureComponent<FastTaggerTagFormProps, Fast
     }
   };
 
-  onTagMove = (group?: FastTaggerGroup) => {
-    this.props.onMoveTagToGroup(group);
+  onRemove = () => {
+    if (this.props.onRemove) {
+      this.props.onRemove();
+    }
   };
 
   render() {
@@ -74,34 +82,13 @@ class FastTaggerTagForm extends React.PureComponent<FastTaggerTagFormProps, Fast
                 />
               </div>
             </div>
-            <div>
-              <Dropdown>
-                <Dropdown.Toggle variant="primary" size="sm">
-                  Move to
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  {this.props.tagGroups
-                    ?.filter(
-                      (targetGroupEntry) =>
-                        targetGroupEntry.group?.id && targetGroupEntry.group?.id != this.props.item._tagGroupId
-                    )
-                    .map((targetGroupEntry) => {
-                      return (
-                        <Dropdown.Item
-                          key={targetGroupEntry.group?.id}
-                          onClick={() => this.onTagMove(targetGroupEntry.group)}
-                        >
-                          {targetGroupEntry.group?.name}
-                        </Dropdown.Item>
-                      );
-                    })}
-                  {this.props.tagGroups && this.props.tagGroups.length > 0 && <Dropdown.Divider />}
-                  <Dropdown.Item key="ungrouped" onClick={() => this.onTagMove(undefined)}>
-                    No group
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            </div>
+            {this.props.onRemove && (
+              <div>
+                <Button className="plugin-fast-tagger-settings-button" variant="danger" onClick={this.onRemove}>
+                  <Icon icon={faTrash} />
+                </Button>
+              </div>
+            )}
           </div>
         </Card.Body>
       </Card>

@@ -62,7 +62,7 @@ export const ModalComponent: React.FC<IModal> = ({
         {leftFooterButtons?.map((leftFooterButton, buttonIndex) => (
           <Button
             key={""+buttonIndex}
-            disabled={isRunning}
+            disabled={isRunning || disabled}
             variant={leftFooterButton.variant ?? "primary"}
             onClick={leftFooterButton.onClick}
             className="ml-2"
@@ -80,7 +80,7 @@ export const ModalComponent: React.FC<IModal> = ({
       <div>
         {footerButtons?.map((footerButton) => (
           <Button
-            disabled={isRunning}
+            disabled={isRunning || disabled}
             variant={footerButton.variant ?? "primary"}
             onClick={footerButton.onClick}
             className="ml-2"
@@ -95,7 +95,7 @@ export const ModalComponent: React.FC<IModal> = ({
           </Button>
         ))}
         {cancel ? (
-          <Button disabled={isRunning} variant={cancel.variant ?? "primary"} onClick={cancel.onClick} className="ml-2">
+          <Button disabled={isRunning || disabled} variant={cancel.variant ?? "primary"} onClick={cancel.onClick} className="ml-2">
             {cancel.text ?? (
               <FormattedMessage
                 id="actions.cancel"

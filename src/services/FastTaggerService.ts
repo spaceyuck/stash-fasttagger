@@ -943,6 +943,8 @@ export async function addTagGroup(group: FastTaggerGroup) {
   }
 
   _addTagGroup(group);
+
+  return group;
 }
 
 export async function removeTagGroup(group: FastTaggerGroup) {
@@ -1059,6 +1061,27 @@ export async function moveTagGroupTo(group: FastTaggerGroup, newOrder: number) {
   }
 
   _finalzeTagGroups();
+}
+
+export async function getTagsForTagGroup(group: FastTaggerGroup) : Promise<FastTaggerEnhancedTag[]> {
+  await init();
+
+  const ret: FastTaggerEnhancedTag[] = [];
+
+  for (const tagToGroup of tagToGroups) {
+    if (tagToGroup.groupId != group.id) {
+      continue;
+    }
+    const tag = tagsById.get(tagToGroup.tagId);
+    if (tag) {
+      const enhancedTag: FastTaggerEnhancedTag = { ...tag };
+      enhancedTag._nameOverride = tagToGroup.name;
+      enhancedTag._tagGroupId = tagToGroup.groupId;
+      ret.push(enhancedTag);
+    }
+  }
+
+  return ret;
 }
 
 export async function getTagGroupToTags(): Promise<FastTaggerGroupTags[]> {
