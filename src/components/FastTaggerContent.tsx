@@ -1,4 +1,4 @@
-import FastTaggerSettingsDialog from "./FastTaggerSettingsDialog";
+import FastTaggerSettingsButton from "./FastTaggerSettingsButton";
 import * as FastTaggerService from "../services/FastTaggerService";
 import { FastTaggerGroup, FastTaggerGroupTags } from "../services/FastTaggerService";
 
@@ -16,7 +16,6 @@ interface FastTaggerContentProps {
 
 interface FastTaggerContentState {
   loading?: boolean;
-  showSettings?: boolean;
   tags?: Tag[];
   /**
    * map from tag ID to IDs of direct and indirect parent IDs
@@ -131,21 +130,8 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
     }
   };
 
-  onSettingsClick = () => {
-    this.setState({ showSettings: true });
-  };
-
   onSettingsClose = (accept: boolean | undefined) => {
-    this.setState({ showSettings: false });
     this.loadData();
-  };
-
-  maybeRenderSettingsDialog = () => {
-    if (!this.state.showSettings) {
-      return;
-    }
-
-    return <FastTaggerSettingsDialog onClose={this.onSettingsClose}></FastTaggerSettingsDialog>;
   };
 
   renderTagPopover = (tag: Tag) => (
@@ -171,7 +157,6 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
 
     return (
       <div className="fast-tagger-content">
-        {this.maybeRenderSettingsDialog()}
         {!this.state.loading &&
           this.state.tagGroupsToTags
             ?.filter(
@@ -250,11 +235,7 @@ class FastTaggerContent extends React.Component<FastTaggerContentProps, FastTagg
                 </Card.Body>
               </Card>
             ))}
-        <div>
-          <Button className="plugin-fast-tagger-settings-button" variant="secondary" onClick={this.onSettingsClick}>
-            <Icon icon={faGear} /> Settings
-          </Button>
-        </div>
+        <FastTaggerSettingsButton onClose={this.onSettingsClose}/>
       </div>
     );
   }
